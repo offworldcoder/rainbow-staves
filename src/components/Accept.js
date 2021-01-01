@@ -33,9 +33,10 @@ function Accept(props) {
     <section className='container'>
       <div {...getRootProps({ className: 'dropzone' })}>
         <input {...getInputProps()} />
-        <img src={grand} alt='' />
-        <p>Drag 'n' drop some files here, or click to select files</p>
+        <p>Drag 'n' drop sheet music image file here, or click to select files</p>
         <em>(Only *.jpeg and *.png images will be accepted)</em>
+        <p/>
+        <img src={grand} alt='' />
       </div>
       <aside>
         <h4>Accepted files</h4>
