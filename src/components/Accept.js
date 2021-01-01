@@ -10,7 +10,6 @@ function Accept(props) {
     getInputProps,
   } = useDropzone({
     accept: 'image/jpeg, image/png',
-    getFilesFromEvent: event => props.myFileGetter(event)
   });
 
   const acceptedFileItems = acceptedFiles.map((file) => (
