@@ -1,10 +1,15 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import grand from '../images/grand.jpg';
+import ColouriseSheetMusic from './ColouriseSheetMusic'
 
 function Accept(props) {
   const onDrop = useCallback(acceptedFiles => {
     console.log(acceptedFiles);
+
+    // Process the sheet
+    const rainbow = new ColouriseSheetMusic()
+    rainbow.go();
   }, []);
   
     const {
