@@ -10,7 +10,26 @@ function Accept(props) {
     getInputProps,
   } = useDropzone({
     accept: 'image/jpeg, image/png',
+    getFilesFromEvent: event => myCustomFileGetter(event)
   });
+
+  async function myCustomFileGetter(event) {
+    const files = [];
+    const fileList = event.dataTransfer ? event.dataTransfer.files : event.target.files;
+  
+    for (var i = 0; i < fileList.length; i++) {
+      const file = fileList.item(i);
+      console.log(`file ${file}`)
+      
+      Object.defineProperty(file, 'myProp', {
+        value: true
+      });
+  
+      files.push(file);
+    }
+  
+    return files;
+  }
 
   const acceptedFileItems = acceptedFiles.map((file) => (
     <li key={file.path}>
