@@ -1,17 +1,18 @@
 import React from 'react';
-import {useDropzone} from 'react-dropzone';
+import { useDropzone } from 'react-dropzone';
+import grand from '../images/grand.jpg'
 
 function Accept(props) {
   const {
     acceptedFiles,
     fileRejections,
     getRootProps,
-    getInputProps
+    getInputProps,
   } = useDropzone({
-    accept: 'image/jpeg, image/png'
+    accept: 'image/jpeg, image/png',
   });
 
-  const acceptedFileItems = acceptedFiles.map(file => (
+  const acceptedFileItems = acceptedFiles.map((file) => (
     <li key={file.path}>
       {file.path} - {file.size} bytes
     </li>
@@ -21,7 +22,7 @@ function Accept(props) {
     <li key={file.path}>
       {file.path} - {file.size} bytes
       <ul>
-        {errors.map(e => (
+        {errors.map((e) => (
           <li key={e.code}>{e.message}</li>
         ))}
       </ul>
@@ -29,9 +30,10 @@ function Accept(props) {
   ));
 
   return (
-    <section className="container">
+    <section className='container'>
       <div {...getRootProps({ className: 'dropzone' })}>
         <input {...getInputProps()} />
+        <img src={grand} alt='' />
         <p>Drag 'n' drop some files here, or click to select files</p>
         <em>(Only *.jpeg and *.png images will be accepted)</em>
       </div>
@@ -45,5 +47,7 @@ function Accept(props) {
   );
 }
 
-{/* <Accept /> */}
+{
+  /* <Accept /> */
+}
 export default Accept;
