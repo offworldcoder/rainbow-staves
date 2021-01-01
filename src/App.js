@@ -1,13 +1,15 @@
-import logo from './logo.svg';
 import './App.css';
 import Accept from './components/Accept';
+
+function gotAFile(event) {
+  console.log(`got a file ${event}`);
+}
 
 function App() {
   return (
     <div className='App'>
       <header className='App-header'>
-        {/* <img src={logo} className='App-logo' alt='logo' /> */}
-        <Accept />
+        <Accept myFileGetter={() => gotAFile} />
       </header>
     </div>
   );
