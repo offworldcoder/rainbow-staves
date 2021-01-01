@@ -1,35 +1,21 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import grand from '../images/grand.jpg'
+import grand from '../images/grand.jpg';
 
 function Accept(props) {
-  const {
+  const onDrop = useCallback(acceptedFiles => {
+    console.log(acceptedFiles);
+  }, []);
+  
+    const {
     acceptedFiles,
     fileRejections,
     getRootProps,
     getInputProps,
   } = useDropzone({
+    onDrop,
     accept: 'image/jpeg, image/png',
-    getFilesFromEvent: event => myCustomFileGetter(event)
   });
-
-  async function myCustomFileGetter(event) {
-    const files = [];
-    const fileList = event.dataTransfer ? event.dataTransfer.files : event.target.files;
-  
-    for (var i = 0; i < fileList.length; i++) {
-      const file = fileList.item(i);
-      console.log(`file ${file}`)
-      
-      Object.defineProperty(file, 'myProp', {
-        value: true
-      });
-  
-      files.push(file);
-    }
-  
-    return files;
-  }
 
   const acceptedFileItems = acceptedFiles.map((file) => (
     <li key={file.path}>
@@ -52,9 +38,11 @@ function Accept(props) {
     <section className='container'>
       <div {...getRootProps({ className: 'dropzone' })}>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop sheet music image file here, or click to select files</p>
+        <p>
+          Drag 'n' drop sheet music image file here, or click to select files
+        </p>
         <em>(Only *.jpeg and *.png images will be accepted)</em>
-        <p/>
+        <p />
         <img src={grand} alt='' />
       </div>
       <aside>
