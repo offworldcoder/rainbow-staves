@@ -19,6 +19,7 @@
         <canvas id="canvasOutput"></canvas>
         <!-- <div class="caption">canvasOutput</div> -->
         <canvas id="canvasOutput2"></canvas>
+        <canvas id="canvasOutput3"></canvas>
         <!-- <div class="caption">canvasOutput2</div> -->
       </div>
     </div>
@@ -77,6 +78,8 @@
 
       function myCode() {
         let src = cv.imread(imgElement);
+        cv.imshow('canvasOutput3', src);
+
         let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
         gray = cv.cvtColor(src, src, cv.COLOR_BGR2GRAY, 0);
         thresh = cv.threshold(
@@ -138,6 +141,9 @@
           cnt.delete();
           tmp.delete();
         }
+
+        let dst3 = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+
         // draw contours with random Scalar
         let colour_idx = 0;
         for (let i = 0; i < contours.size(); ++i) {
@@ -145,9 +151,11 @@
           colour_idx = colour_idx + 1;
           if (colour_idx == colours.length) colour_idx = 0;
           cv.drawContours(dst, poly, i, colour, 1, 8, hierarchy, 0);
+          cv.drawContours(dst3, poly, i, colour, 1, 8, hierarchy, 0);
         }
 
         cv.imshow('canvasOutput', dst);
+        cv.imshow('canvasOutput3', dst3);
 
         // for c in cnts:
         //     cv2.drawContours(result, [c], -1, colors[color_idx], 2)
