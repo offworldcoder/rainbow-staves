@@ -2,23 +2,24 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Hello OpenCV.js</title>
+    <title>Rainbow Staves</title>
   </head>
   <body>
-    <h2>Hello OpenCV.js</h2>
-    <p id="status">OpenCV.js is loading...</p>
+    <h2>Rainbow Staves</h2>
+    <p id="status">Rainbow Stave is loading...</p>
     <div>
       <div class="inputoutput">
-        <img id="imageSrc" alt="No Image" />
+        <img id="imageSrc" alt="" />
         <div class="caption">
-          imageSrc <input type="file" id="fileInput" name="file" />
+          Sheet Music file to Colourize ->
+          <input type="file" id="fileInput" name="file" />
         </div>
       </div>
       <div class="inputoutput">
         <canvas id="canvasOutput"></canvas>
-        <div class="caption">canvasOutput</div>
+        <!-- <div class="caption">canvasOutput</div> -->
         <canvas id="canvasOutput2"></canvas>
-        <div class="caption">canvasOutput2</div>
+        <!-- <div class="caption">canvasOutput2</div> -->
       </div>
     </div>
     <script type="text/javascript">
@@ -86,7 +87,7 @@
           cv.THRESH_BINARY_INV + cv.THRESH_OTSU
         )[1];
 
-        cv.imshow('canvasOutput', src);
+        // cv.imshow('canvasOutput', src);
 
         let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
         let anchor = new cv.Point(-1, -1);
@@ -146,7 +147,7 @@
           cv.drawContours(dst, poly, i, colour, 1, 8, hierarchy, 0);
         }
 
-        cv.imshow('canvasOutput2', dst);
+        cv.imshow('canvasOutput', dst);
 
         // for c in cnts:
         //     cv2.drawContours(result, [c], -1, colors[color_idx], 2)
@@ -165,13 +166,19 @@
 
         //
         // mat.delete();
+        src.delete();
+        dst.delete();
+        hierarchy.delete();
+        contours.delete();
+        poly.delete();
       }
       imgElement.onload = function () {
         myCode();
         // exampleCode();
       };
       function onOpenCvReady() {
-        document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+        document.getElementById('status').innerHTML =
+          'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer.';
       }
     </script>
     <script
