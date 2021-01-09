@@ -18,9 +18,6 @@
       <div class="inputoutput">
         <canvas id="canvasOutput"></canvas>
         <!-- <div class="caption">canvasOutput</div> -->
-        <!-- <canvas id="canvasOutput2"></canvas>
-        <canvas id="canvasOutput3"></canvas> -->
-        <!-- <div class="caption">canvasOutput2</div> -->
       </div>
     </div>
     <script type="text/javascript">
@@ -36,10 +33,12 @@
 
       function myCode() {
         let src = cv.imread(imgElement);
-        let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+        let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
+        src.copyTo(dst);
 
         gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
+
         thresh = new cv.Mat();
         cv.threshold(
           gray,
@@ -64,7 +63,7 @@
 
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        let poly = new cv.MatVector();
+        // let poly = new cv.MatVector();
 
         cv.findContours(
           detect_horizontal,
@@ -74,49 +73,65 @@
           cv.CHAIN_APPROX_SIMPLE
         );
 
+        // dst_rgb = new cv.Mat();
+        // cv.cvtColor(dst, dst_rgb, cv.GRAY2RGB);
+
         // cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         // SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
         // REMOVE HORIZONTAL LINES THAT ARE TOO SHORT (ONLY USE THE LONG ONES)
         const colours = [
-          new cv.Scalar(87, 80, 245), // red (line 1)
-          new cv.Scalar(231, 177, 237),
-          new cv.Scalar(220, 74, 67),
-          new cv.Scalar(180, 216, 165),
-          new cv.Scalar(100, 230, 223),
-          new cv.Scalar(60, 172, 252),
-          new cv.Scalar(87, 80, 245),
-          new cv.Scalar(204, 95, 213),
-          new cv.Scalar(220, 74, 67),
-          new cv.Scalar(180, 216, 165),
+          [87, 80, 245, 255], // red (line 1)
+          [231, 177, 237, 255],
+          [220, 74, 67, 255],
+          [180, 216, 165, 255],
+          [100, 230, 223, 255],
+          [60, 172, 252, 255],
+          [87, 80, 245, 255],
+          [204, 95, 213, 255],
+          [220, 74, 67, 255],
+          [180, 216, 165, 255],
         ];
 
-        for (let i = 0; i < contours.size(); ++i) {
-          let tmp = new cv.Mat();
-          let cnt = contours.get(i);
-          // You can try more different parameters
-          cv.approxPolyDP(cnt, tmp, 3, true);
-          poly.push_back(tmp);
-          cnt.delete();
-          tmp.delete();
-        }
-
-        src.copyTo(dst);
-
-        // draw contours with random Scalar
+        // draw contours
         let colour_idx = 0;
         for (let i = 0; i < contours.size(); ++i) {
           let colour = colours[colour_idx];
           colour_idx = colour_idx + 1;
-          if (colour_idx == colours.length) colour_idx = 0;
-          cv.drawContours(dst, poly, i, colour, 1, 8, hierarchy, 0);
+          if (colour_idx == colours.length) {
+            colour_idx = 0;
+          }
+          // colour = new cv.Scalar(255, 0, 0);
+          cv.drawContours(
+            src,
+            contours,
+            i,
+            colour,
+            1,
+            cv.LINE_8,
+            hierarchy,
+            100
+          );
+
+          // const con = contours.get(i);
+          // const [x1, y1] = con.intPtr(0);
+          // const [x2, y2] = con.intPtr(1);
+          // let p1 = new cv.Point(x1, y1);
+          // let p2 = new cv.Point(x2, y2);
+          // cv.line(src, p1, p2, [0, 0, 255, 255], 1);
         }
+
+        cv.line(
+          src,
+          new cv.Point(20, 160),
+          new cv.Point(100, 160),
+          [0, 0, 255, 255],
+          10
+        );
 
         // cv.imshow('canvasOutput', gray);
         // cv.imshow('canvasOutput', thresh);
         // cv.imshow('canvasOutput', detect_horizontal);
-        cv.imshow('canvasOutput', dst);
-        // cv.imshow('canvasOutput3', result);
-
+        cv.imshow('canvasOutput', src);
         // for c in cnts:
         //     cv2.drawContours(result, [c], -1, colors[color_idx], 2)
         //     color_idx += 1
@@ -138,7 +153,7 @@
         dst.delete();
         hierarchy.delete();
         contours.delete();
-        poly.delete();
+        // poly.delete();
       }
       imgElement.onload = function () {
         myCode();
