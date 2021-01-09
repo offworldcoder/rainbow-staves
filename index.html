@@ -63,7 +63,6 @@
 
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        // let poly = new cv.MatVector();
 
         cv.findContours(
           detect_horizontal,
@@ -72,9 +71,6 @@
           cv.RETR_EXTERNAL,
           cv.CHAIN_APPROX_SIMPLE
         );
-
-        // dst_rgb = new cv.Mat();
-        // cv.cvtColor(dst, dst_rgb, cv.GRAY2RGB);
 
         // cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         // SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
@@ -100,7 +96,6 @@
           if (colour_idx == colours.length) {
             colour_idx = 0;
           }
-          // colour = new cv.Scalar(255, 0, 0);
           cv.drawContours(
             src,
             contours,
@@ -111,32 +106,9 @@
             hierarchy,
             100
           );
-
-          // const con = contours.get(i);
-          // const [x1, y1] = con.intPtr(0);
-          // const [x2, y2] = con.intPtr(1);
-          // let p1 = new cv.Point(x1, y1);
-          // let p2 = new cv.Point(x2, y2);
-          // cv.line(src, p1, p2, [0, 0, 255, 255], 1);
         }
 
-        cv.line(
-          src,
-          new cv.Point(20, 160),
-          new cv.Point(100, 160),
-          [0, 0, 255, 255],
-          10
-        );
-
-        // cv.imshow('canvasOutput', gray);
-        // cv.imshow('canvasOutput', thresh);
-        // cv.imshow('canvasOutput', detect_horizontal);
         cv.imshow('canvasOutput', src);
-        // for c in cnts:
-        //     cv2.drawContours(result, [c], -1, colors[color_idx], 2)
-        //     color_idx += 1
-        //     if color_idx == len(colors):
-        //         color_idx = 0
 
         // edge_kernel = np.array([[ 0.0, -1, 0],
         //                         [ -1, 4, -1],
@@ -148,12 +120,10 @@
         //     cv2.fillPoly(result, [c], (0,0,0))
 
         //
-        // mat.delete();
         src.delete();
         dst.delete();
         hierarchy.delete();
         contours.delete();
-        // poly.delete();
       }
       imgElement.onload = function () {
         myCode();
