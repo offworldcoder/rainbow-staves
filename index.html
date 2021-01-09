@@ -9,15 +9,12 @@
     <p id="status">Rainbow Stave is loading...</p>
     <div>
       <div class="inputoutput">
+        <canvas id="canvasOutput"></canvas>
         <img id="imageSrc" alt="" />
         <div class="caption">
           Sheet Music file to Colourize ->
           <input type="file" id="fileInput" name="file" />
         </div>
-      </div>
-      <div class="inputoutput">
-        <canvas id="canvasOutput"></canvas>
-        <!-- <div class="caption">canvasOutput</div> -->
       </div>
     </div>
     <script type="text/javascript">
@@ -72,11 +69,13 @@
           cv.CHAIN_APPROX_SIMPLE
         );
 
-        // cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+        //TODO:
         // SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
         // REMOVE HORIZONTAL LINES THAT ARE TOO SHORT (ONLY USE THE LONG ONES)
+        // SAVE OPTIONS
+        // use PDF's
         const colours = [
-          [87, 80, 245, 255], // red (line 1)
+          [87, 80, 245, 255],
           [231, 177, 237, 255],
           [220, 74, 67, 255],
           [180, 216, 165, 255],
