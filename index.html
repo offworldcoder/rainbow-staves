@@ -18,8 +18,8 @@
       <div class="inputoutput">
         <canvas id="canvasOutput"></canvas>
         <!-- <div class="caption">canvasOutput</div> -->
-        <canvas id="canvasOutput2"></canvas>
-        <canvas id="canvasOutput3"></canvas>
+        <!-- <canvas id="canvasOutput2"></canvas>
+        <canvas id="canvasOutput3"></canvas> -->
         <!-- <div class="caption">canvasOutput2</div> -->
       </div>
     </div>
@@ -34,70 +34,28 @@
         false
       );
 
-      function exampleCode() {
-        let src = cv.imread(imgElement);
-        let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-        cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
-        cv.threshold(src, src, 100, 200, cv.THRESH_BINARY);
-        let contours = new cv.MatVector();
-        let hierarchy = new cv.Mat();
-        let poly = new cv.MatVector();
-        cv.findContours(
-          src,
-          contours,
-          hierarchy,
-          cv.RETR_CCOMP,
-          cv.CHAIN_APPROX_SIMPLE
-        );
-        // approximates each contour to polygon
-        for (let i = 0; i < contours.size(); ++i) {
-          let tmp = new cv.Mat();
-          let cnt = contours.get(i);
-          // You can try more different parameters
-          cv.approxPolyDP(cnt, tmp, 3, true);
-          poly.push_back(tmp);
-          cnt.delete();
-          tmp.delete();
-        }
-        // draw contours with random Scalar
-        for (let i = 0; i < contours.size(); ++i) {
-          let color = new cv.Scalar(
-            Math.round(Math.random() * 255),
-            Math.round(Math.random() * 255),
-            Math.round(Math.random() * 255)
-          );
-          cv.drawContours(dst, poly, i, color, 1, 8, hierarchy, 0);
-        }
-        cv.imshow('canvasExampleOutput', dst);
-        src.delete();
-        dst.delete();
-        hierarchy.delete();
-        contours.delete();
-        poly.delete();
-      }
-
       function myCode() {
         let src = cv.imread(imgElement);
-        cv.imshow('canvasOutput3', src);
-
         let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-        gray = cv.cvtColor(src, src, cv.COLOR_BGR2GRAY, 0);
-        thresh = cv.threshold(
-          src,
-          src,
+
+        gray = new cv.Mat();
+        cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
+        thresh = new cv.Mat();
+        cv.threshold(
+          gray,
+          thresh,
           0,
           255,
           cv.THRESH_BINARY_INV + cv.THRESH_OTSU
         )[1];
 
-        // cv.imshow('canvasOutput', src);
-
         let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
         let anchor = new cv.Point(-1, -1);
 
-        detect_horizontal = cv.morphologyEx(
-          src,
-          src,
+        detect_horizontal = new cv.Mat();
+        cv.morphologyEx(
+          thresh,
+          detect_horizontal,
           cv.MORPH_OPEN,
           horizontal_kernel,
           anchor,
@@ -109,7 +67,7 @@
         let poly = new cv.MatVector();
 
         cv.findContours(
-          src,
+          detect_horizontal,
           contours,
           hierarchy,
           cv.RETR_EXTERNAL,
@@ -142,7 +100,7 @@
           tmp.delete();
         }
 
-        let dst3 = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+        src.copyTo(dst);
 
         // draw contours with random Scalar
         let colour_idx = 0;
@@ -151,11 +109,13 @@
           colour_idx = colour_idx + 1;
           if (colour_idx == colours.length) colour_idx = 0;
           cv.drawContours(dst, poly, i, colour, 1, 8, hierarchy, 0);
-          cv.drawContours(dst3, poly, i, colour, 1, 8, hierarchy, 0);
         }
 
+        // cv.imshow('canvasOutput', gray);
+        // cv.imshow('canvasOutput', thresh);
+        // cv.imshow('canvasOutput', detect_horizontal);
         cv.imshow('canvasOutput', dst);
-        cv.imshow('canvasOutput3', dst3);
+        // cv.imshow('canvasOutput3', result);
 
         // for c in cnts:
         //     cv2.drawContours(result, [c], -1, colors[color_idx], 2)
@@ -182,7 +142,6 @@
       }
       imgElement.onload = function () {
         myCode();
-        // exampleCode();
       };
       function onOpenCvReady() {
         document.getElementById('status').innerHTML =
