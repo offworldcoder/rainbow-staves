@@ -136,7 +136,7 @@
         const rect = sortedContours[i];
 
         // Only draw horizontal lines  which are long enough to be considered part of the stave
-        if (rect.width > averageWidth) {
+        if (rect.width > maxLength / 2) {
           let colour = colours[colour_idx];
           colour_idx = colour_idx + 1;
           if (colour_idx == colours.length) {
