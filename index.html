@@ -113,20 +113,41 @@
 
       const sortedContours = sortContours(contours)
 
+      // work out how long the staves are (mostly)
+      let maxLength = 0
+      let minLength = 9999
+      let total = 0
+      let counter = 0
+      for (i in sortedContours) {
+        counter += 1
+        const rect = sortedContours[i];
+        maxLength = Math.max(maxLength, rect.width);
+        minLength = Math.min(minLength, rect.width)
+        total = total + rect.width;
+      }
+
+      console.log(`sortedContours.length ${counter}`)
+      const averageWidth = total / counter;
+      console.log(`length min ${minLength} max ${maxLength} average ${averageWidth}`)
+
       // draw contours
       let colour_idx = 0;
       for (i in sortedContours) {
-        let colour = colours[colour_idx];
-        colour_idx = colour_idx + 1;
-        if (colour_idx == colours.length) {
-          colour_idx = 0;
-        }
         const rect = sortedContours[i];
-        cv.rectangle(src,
-          new cv.Point(rect.x, rect.y),
-          new cv.Point(rect.x + rect.width, rect.y + rect.height),
-          colour,
-          1)
+
+        // Only draw horizontal lines  which are long enough to be considered part of the stave
+        if (rect.width > averageWidth) {
+          let colour = colours[colour_idx];
+          colour_idx = colour_idx + 1;
+          if (colour_idx == colours.length) {
+            colour_idx = 0;
+          }
+          cv.rectangle(src,
+            new cv.Point(rect.x, rect.y),
+            new cv.Point(rect.x + rect.width, rect.y + rect.height),
+            colour,
+            1)
+        }
       }
 
       cv.imshow('canvasOutput', src);
