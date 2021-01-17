@@ -21,8 +21,9 @@
   </div>
   <script type="text/javascript">
     //TODO:
-    // SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
+    // * SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
     // REMOVE HORIZONTAL LINES THAT ARE TOO SHORT (ONLY USE THE LONG ONES)
+    // DRAW OVER NOTES to place them on top of the staves unless there's a better approach
     // SAVE OPTIONS
     // use PDF's
 
@@ -36,25 +37,13 @@
       false
     );
 
-    function sortStaves(contours) {
+    function sortContours(contours) {
       let sortableContours = [];
       for (let i = 0; i < contours.size(); i++) {
         const rect = cv.boundingRect(contours.get(i));
         console.log(`rect ${rect.y} contour ${JSON.stringify(contours.get(i)[0])}`)
         sortableContours.push({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
       }
-
-      //TODO: Would be nicer to be able to sort the original contours array but it doesn't have a sort method
-      // contours.sort((item1, item2) => {
-      //   const rect1 = item1.boundingRect();
-      //   const rect2 = item2.boundingRect();
-      //   return (rect1.y < rect2.y) ? -1 : (rect1.y > rect2.y) ? 1 : 0;
-      // })
-
-      // for (idx in contours) {
-      //   const contour = contours[idx]
-      //   console.log(`sorted contour ${JSON.stringify(contour)}`)
-      // }
 
       //Sort 'em
       sortableContours = sortableContours.sort((item1, item2) => {
@@ -66,7 +55,7 @@
         console.log(`sorted contour ${JSON.stringify(contour)}`)
       }
 
-      return contours
+      return sortableContours
     }
 
     function myCode() {
@@ -123,30 +112,27 @@
         [180, 216, 165, 255],
       ];
 
-      const sortedContours = sortStaves(contours)
+      const sortedContours = sortContours(contours)
 
       // draw contours
       let colour_idx = 0;
-      for (let i = 0; i < sortedContours.size(); ++i) {
+      for (i in sortedContours) {
         let colour = colours[colour_idx];
         colour_idx = colour_idx + 1;
         if (colour_idx == colours.length) {
           colour_idx = 0;
         }
-        cv.drawContours(
-          src,
-          sortedContours,
-          i,
+        const rect = sortedContours[i];
+        cv.rectangle(src,
+          new cv.Point(rect.x, rect.y),
+          new cv.Point(rect.x + rect.width, rect.y + rect.height),
           colour,
-          1,
-          cv.LINE_8,
-          hierarchy,
-          100
-        );
+          1)
       }
 
       cv.imshow('canvasOutput', src);
 
+      //TODO: draw over the notes to place them on top of the staves unless there's a better approach
       // edge_kernel = np.array([[ 0.0, -1, 0],
       //                         [ -1, 4, -1],
       //                         [ 0, -1, 0]], dtype=np.uint8)
