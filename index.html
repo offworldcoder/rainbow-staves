@@ -41,7 +41,6 @@
       let sortableContours = [];
       for (let i = 0; i < contours.size(); i++) {
         const rect = cv.boundingRect(contours.get(i));
-        console.log(`rect ${rect.y} contour ${JSON.stringify(contours.get(i)[0])}`)
         sortableContours.push({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
       }
 
@@ -50,10 +49,10 @@
         return (item1.y < item2.y) ? -1 : (item1.y > item2.y) ? 1 : 0;
       });
 
-      for (idx in sortableContours) {
-        const contour = sortableContours[idx]
-        console.log(`sorted contour ${JSON.stringify(contour)}`)
-      }
+      // for (idx in sortableContours) {
+      //   const contour = sortableContours[idx]
+      //   console.log(`sorted contour ${JSON.stringify(contour)}`)
+      // }
 
       return sortableContours
     }
@@ -100,16 +99,16 @@
       );
 
       const colours = [
-        [87, 80, 245, 255],
-        [231, 177, 237, 255],
-        [220, 74, 67, 255],
-        [180, 216, 165, 255],
-        [100, 230, 223, 255],
-        [60, 172, 252, 255],
-        [87, 80, 245, 255],
-        [204, 95, 213, 255],
-        [220, 74, 67, 255],
-        [180, 216, 165, 255],
+        [245, 80, 87, 255],
+        [237, 177, 231, 255],
+        [67, 74, 220, 255],
+        [165, 216, 180, 255],
+        [223, 230, 100, 255],
+        [252, 172, 60, 255],
+        [245, 80, 87, 255],
+        [213, 95, 204, 255],
+        [67, 74, 220, 255],
+        [165, 216, 180, 255],
       ];
 
       const sortedContours = sortContours(contours)
