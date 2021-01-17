@@ -36,18 +36,39 @@
       false
     );
 
-    function sortStaves() {
-      //     if method == "top-to-bottom" or method == "bottom-to-top":
-      //     i = 1
-      //     # construct the list of bounding boxes and sort them from top to
-      //     # bottom
-      //     boundingBoxes = [cv2.boundingRect(c) for c in cnts]
-      //     (cnts, boundingBoxes) = zip(* sorted(zip(cnts, boundingBoxes),
-      //       key = lambda b: b[1][i], reverse = reverse))
-      //     # return the list of sorted contours and bounding boxes
-      //     return (cnts, boundingBoxes)
+    function sortStaves(contours) {
+      let sortableContours = [];
+      for (let i = 0; i < contours.size(); i++) {
+        const rect = cv.boundingRect(contours.get(i));
+        console.log(`rect ${rect.y} contour ${JSON.stringify(contours.get(i)[0])}`)
+        sortableContours.push({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
+      }
 
+      //TODO: Would be nicer to be able to sort the original contours array but it doesn't have a sort method
+      // contours.sort((item1, item2) => {
+      //   const rect1 = item1.boundingRect();
+      //   const rect2 = item2.boundingRect();
+      //   return (rect1.y < rect2.y) ? -1 : (rect1.y > rect2.y) ? 1 : 0;
+      // })
+
+      // for (idx in contours) {
+      //   const contour = contours[idx]
+      //   console.log(`sorted contour ${JSON.stringify(contour)}`)
+      // }
+
+      //Sort 'em
+      sortableContours = sortableContours.sort((item1, item2) => {
+        return (item1.y < item2.y) ? -1 : (item1.y > item2.y) ? 1 : 0;
+      });
+
+      for (idx in sortableContours) {
+        const contour = sortableContours[idx]
+        console.log(`sorted contour ${JSON.stringify(contour)}`)
+      }
+
+      return contours
     }
+
     function myCode() {
       let src = cv.imread(imgElement);
       let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
@@ -102,9 +123,11 @@
         [180, 216, 165, 255],
       ];
 
+      const sortedContours = sortStaves(contours)
+
       // draw contours
       let colour_idx = 0;
-      for (let i = 0; i < contours.size(); ++i) {
+      for (let i = 0; i < sortedContours.size(); ++i) {
         let colour = colours[colour_idx];
         colour_idx = colour_idx + 1;
         if (colour_idx == colours.length) {
@@ -112,7 +135,7 @@
         }
         cv.drawContours(
           src,
-          contours,
+          sortedContours,
           i,
           colour,
           1,
