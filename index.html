@@ -150,17 +150,50 @@
         }
       }
 
-      cv.imshow('canvasOutput', src);
 
       //TODO: draw over the notes to place them on top of the staves unless there's a better approach
       // edge_kernel = np.array([[ 0.0, -1, 0],
       //                         [ -1, 4, -1],
       //                         [ 0, -1, 0]], dtype=np.uint8)
-      // detect_edge = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, edge_kernel, iterations=2)
-      // cnts = cv2.findContours(detect_edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+
+      edge_kernel = cv.matFromArray(3, 3, cv.CV_8UC1,
+        [
+          [0.0, -1, 0],
+          [- 1, 4, -1],
+          [0, -1, 0]
+        ])
+      const edge_anchor = new cv.Point(-1, -1);
+
+      detect_edge = new cv.Mat()
+      cv.morphologyEx(
+        thresh,
+        detect_edge,
+        cv.MORPH_OPEN,
+        edge_kernel,
+        edge_anchor,
+        2)
+
+      let edge_contours = new cv.MatVector();
+      let edge_hierarchy = new cv.Mat();
+      cv.findContours(
+        detect_edge,
+        edge_contours,
+        edge_hierarchy,
+        cv.RETR_EXTERNAL,
+        cv.CHAIN_APPROX_SIMPLE)
+
       // cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-      // for c in cnts:
-      //     cv2.fillPoly(result, [c], (0,0,0))
+      for (let i = 0; i < edge_contours.size(); i++) {
+        const rect = cv.boundingRect(edge_contours.get(i));
+        cv.rectangle(src,
+          new cv.Point(rect.x, rect.y),
+          new cv.Point(rect.x + rect.width, rect.y + rect.height),
+          [0, 255, 0, 255],
+          1)
+      }
+
+      cv.imshow('canvasOutput', src);
 
       //
       src.delete();
