@@ -11,6 +11,7 @@
   <p id="status">Rainbow Stave is loading...</p>
   <div>
     <div class="inputoutput">
+      <img id="wholenote" src='./wholenote.png' />
       <canvas id="canvasOutput"></canvas>
       <img id="imageSrc" alt="" />
       <div class="caption">
@@ -58,6 +59,8 @@
     }
 
     function myCode() {
+      let gray = cv.imread('wholenote', 0)
+
       let src = cv.imread(imgElement);
       let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
       src.copyTo(dst);
@@ -130,6 +133,55 @@
       const averageWidth = total / counter;
       console.log(`length min ${minLength} max ${maxLength} average ${averageWidth}`)
 
+
+
+      //TODO: draw over the notes to place them on top of the staves unless there's a better approach
+      // edge_kernel = np.array([[ 0.0, -1, 0],
+      //                         [ -1, 4, -1],
+      //                         [ 0, -1, 0]], dtype=np.uint8)
+
+      let threshed = new cv.Mat();
+      cv.threshold(
+        gray,
+        threshed,
+        100,
+        255,
+        cv.THRESH_BINARY_INV | cv.THRESH_OTSU)
+
+      let edge_contours = new cv.MatVector();
+      cv.findContours(
+        threshed,
+        edge_contours,
+        cv.RETR_LIST,
+        cv.CHAIN_APPROX_SIMPLE)[-2]
+
+      // edge_kernel = cv.matFromArray(3, 3, cv.CV_8U,
+      //   [
+      //     [0.0, -1, 0],
+      //     [- 1, 4, -1],
+      //     [0, -1, 0]
+      //   ])
+      // const edge_anchor = new cv.Point(1, 1);
+
+      // detect_edge = new cv.Mat()
+      // cv.morphologyEx(
+      //   thresh,
+      //   detect_edge,
+      //   cv.MORPH_OPEN,
+      //   edge_kernel,
+      //   edge_anchor,
+      //   2)
+
+      // let edge_contours = new cv.MatVector();
+      // let edge_hierarchy = new cv.Mat();
+      // cv.findContours(
+      //   detect_edge,
+      //   edge_contours,
+      //   edge_hierarchy,
+      //   cv.RETR_EXTERNAL,
+      //   cv.CHAIN_APPROX_SIMPLE)
+
+
       // draw contours
       let colour_idx = 0;
       for (i in sortedContours) {
@@ -149,39 +201,6 @@
             1)
         }
       }
-
-
-      //TODO: draw over the notes to place them on top of the staves unless there's a better approach
-      // edge_kernel = np.array([[ 0.0, -1, 0],
-      //                         [ -1, 4, -1],
-      //                         [ 0, -1, 0]], dtype=np.uint8)
-
-
-      edge_kernel = cv.matFromArray(3, 3, cv.CV_8UC1,
-        [
-          [0.0, -1, 0],
-          [- 1, 4, -1],
-          [0, -1, 0]
-        ])
-      const edge_anchor = new cv.Point(-1, -1);
-
-      detect_edge = new cv.Mat()
-      cv.morphologyEx(
-        thresh,
-        detect_edge,
-        cv.MORPH_OPEN,
-        edge_kernel,
-        edge_anchor,
-        2)
-
-      let edge_contours = new cv.MatVector();
-      let edge_hierarchy = new cv.Mat();
-      cv.findContours(
-        detect_edge,
-        edge_contours,
-        edge_hierarchy,
-        cv.RETR_EXTERNAL,
-        cv.CHAIN_APPROX_SIMPLE)
 
       // cnts = cnts[0] if len(cnts) == 2 else cnts[1]
       for (let i = 0; i < edge_contours.size(); i++) {
