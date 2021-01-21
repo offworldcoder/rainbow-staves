@@ -59,7 +59,7 @@
     }
 
     function myCode() {
-      let wholeNote = cv.imread('wholenote')
+      let wholeNote = cv.imread('wholenote', 0)
 
       let src = cv.imread(imgElement);
       let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
@@ -146,25 +146,29 @@
 
 
       console.info('2')
+      cv.matchTemplate(
+        src,
+        wholeNote,
+        dst2,
+        cv.TM_CCOEFF_NORMED,
+        mask
+      )
 
-      let threshold = 0.95
-      result = 1
+      let threshold = 0.50
+      max_val = 1
       counter = 0
-      while (result > threshold && counter < 20) {
-        counter = counter + 1
-        cv.matchTemplate(
-          src,
-          wholeNote,
-          dst2,
-          cv.TM_CCOEFF,
-          mask
-        )
 
-        let result = cv.minMaxLoc(dst2, mask)
+      while (counter < 20) {// && max_val > threshold) { // && counter < 20) {
+        counter = counter + 1
+        let result = cv.minMaxLoc(dst2) //, mask)
+        max_val = result.maxVal
+        console.info(`max_val ${max_val}`)
         console.info(`result ${JSON.stringify(result)}`)
+        // if (max_val > threshold) {
         let maxPoint = result.maxLoc
         let point = new cv.Point(maxPoint.x + wholeNote.cols, maxPoint.y + wholeNote.rows)
         cv.rectangle(src, maxPoint, point, new cv.Scalar(255, 0, 0, 255), cv.FILLED, cv.LINE_8, 0)
+        // }
       }
 
       console.info('3')
