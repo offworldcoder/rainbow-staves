@@ -170,7 +170,7 @@
 
 
       console.log('3')
-      while (counter < 100) {// && max_val > threshold) { // && counter < 20) {
+      while (counter < 20) {// && max_val > threshold) { // && counter < 20) {
         counter = counter + 1
 
         console.log('4')
@@ -198,31 +198,34 @@
         console.log('6')
       }
 
+      //TODO: Store the rectangles above
+      //TODO: Make gaps in the horizontal staves where the rectangles are
+
       cv.imshow('canvasOutput', src);
 
       console.info('3')
 
       // draw contours
-      // let colour_idx = 0;
-      // for (i in sortedContours) {
-      //   const rect = sortedContours[i];
+      let colour_idx = 0;
+      for (i in sortedContours) {
+        const rect = sortedContours[i];
 
-      //   // Only draw horizontal lines  which are long enough to be considered part of the stave
-      //   if (rect.width > maxLength / 2) {
-      //     let colour = colours[colour_idx];
-      //     colour_idx = colour_idx + 1;
-      //     if (colour_idx == colours.length) {
-      //       colour_idx = 0;
-      //     }
-      //     cv.rectangle(src,
-      //       new cv.Point(rect.x, rect.y),
-      //       new cv.Point(rect.x + rect.width, rect.y + rect.height),
-      //       colour,
-      //       1)
-      //   }
-      // }
+        // Only draw horizontal lines  which are long enough to be considered part of the stave
+        if (rect.width > maxLength / 2) {
+          let colour = colours[colour_idx];
+          colour_idx = colour_idx + 1;
+          if (colour_idx == colours.length) {
+            colour_idx = 0;
+          }
+          cv.rectangle(src,
+            new cv.Point(rect.x, rect.y),
+            new cv.Point(rect.x + rect.width, rect.y + rect.height),
+            colour,
+            1)
+        }
+      }
 
-      // cv.imshow('canvasOutput', src);
+      cv.imshow('canvasOutput', src);
 
       //
       src.delete();
