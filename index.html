@@ -65,8 +65,12 @@
       let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
       src.copyTo(dst);
 
+      // Preprocess
       gray = new cv.Mat();
       cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
+
+      wholeNote2 = new cv.Mat();
+      cv.cvtColor(wholeNote, wholeNote2, cv.COLOR_BGR2GRAY, 0);
 
       thresh = new cv.Mat();
       cv.threshold(
@@ -77,6 +81,7 @@
         cv.THRESH_BINARY_INV + cv.THRESH_OTSU
       )[1];
 
+      // Find Staves
       let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
       let anchor = new cv.Point(-1, -1);
 
@@ -140,60 +145,84 @@
       //                         [ -1, 4, -1],
       //                         [ 0, -1, 0]], dtype=np.uint8)
 
+      // Find the notes
       console.info('1')
       let mask = new cv.Mat()
-      let dst2 = new cv.Mat()
+      // let dst2 = new cv.Mat()
 
+      // img_rgb = cv.imread('mario.png')
+      // img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
+      // template = cv.imread('mario_coin.png',0)
+      // w, h = template.shape[::-1]
+      // res = cv.matchTemplate(img_gray,template,cv.TM_CCOEFF_NORMED)
+      // threshold = 0.8
+      // loc = np.where( res >= threshold)
+      // for pt in zip(*loc[::-1]):
+      //     cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
 
       console.info('2')
-      cv.matchTemplate(
-        src,
-        wholeNote,
-        dst2,
-        cv.TM_CCOEFF_NORMED,
-        mask
-      )
 
       let threshold = 0.50
       max_val = 1
       counter = 0
 
-      while (counter < 20) {// && max_val > threshold) { // && counter < 20) {
+      let dst2 = new cv.Mat();
+
+
+      console.log('3')
+      while (counter < 100) {// && max_val > threshold) { // && counter < 20) {
         counter = counter + 1
-        let result = cv.minMaxLoc(dst2) //, mask)
+
+        console.log('4')
+
+        cv.matchTemplate(
+          gray,
+          wholeNote2,
+          dst2,
+          cv.TM_CCOEFF_NORMED,
+          mask
+        )
+
+        let result = cv.minMaxLoc(dst2, mask)
+
+        console.log('5')
         max_val = result.maxVal
         console.info(`max_val ${max_val}`)
         console.info(`result ${JSON.stringify(result)}`)
         // if (max_val > threshold) {
         let maxPoint = result.maxLoc
         let point = new cv.Point(maxPoint.x + wholeNote.cols, maxPoint.y + wholeNote.rows)
-        cv.rectangle(src, maxPoint, point, new cv.Scalar(255, 0, 0, 255), cv.FILLED, cv.LINE_8, 0)
+        cv.rectangle(gray, maxPoint, point, new cv.Scalar(255, 0, 0, 255), cv.FILLED, cv.LINE_8, 0)
+        cv.rectangle(src, maxPoint, point, new cv.Scalar(255, 0, 0, 255), 3, cv.LINE_8, 0)
         // }
+        console.log('6')
       }
+
+      cv.imshow('canvasOutput', src);
 
       console.info('3')
 
       // draw contours
-      let colour_idx = 0;
-      for (i in sortedContours) {
-        const rect = sortedContours[i];
+      // let colour_idx = 0;
+      // for (i in sortedContours) {
+      //   const rect = sortedContours[i];
 
-        // Only draw horizontal lines  which are long enough to be considered part of the stave
-        if (rect.width > maxLength / 2) {
-          let colour = colours[colour_idx];
-          colour_idx = colour_idx + 1;
-          if (colour_idx == colours.length) {
-            colour_idx = 0;
-          }
-          cv.rectangle(src,
-            new cv.Point(rect.x, rect.y),
-            new cv.Point(rect.x + rect.width, rect.y + rect.height),
-            colour,
-            1)
-        }
-      }
+      //   // Only draw horizontal lines  which are long enough to be considered part of the stave
+      //   if (rect.width > maxLength / 2) {
+      //     let colour = colours[colour_idx];
+      //     colour_idx = colour_idx + 1;
+      //     if (colour_idx == colours.length) {
+      //       colour_idx = 0;
+      //     }
+      //     cv.rectangle(src,
+      //       new cv.Point(rect.x, rect.y),
+      //       new cv.Point(rect.x + rect.width, rect.y + rect.height),
+      //       colour,
+      //       1)
+      //   }
+      // }
 
-      cv.imshow('canvasOutput', src);
+      // cv.imshow('canvasOutput', src);
 
       //
       src.delete();
