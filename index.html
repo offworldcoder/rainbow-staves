@@ -163,7 +163,7 @@
 
       let maxVal = null
       let minVal = null
-      while (counter < 1) { //1000) {
+      while (counter < 1000) {
         counter = counter + 1
 
         const minMax = cv.minMaxLoc(matched);
@@ -185,105 +185,91 @@
 
         let rect = new cv.Rect(x, y, x + 50, y + 50);
         cv.rectangle(matched, topLeft, bottomRight, new cv.Scalar(0, 0, 0, 255), cv.FILLED, cv.LINE_8, 0)
-        cv.rectangle(src, topLeft, bottomRight, new cv.Scalar(255, 0, 0, 255), 3, cv.LINE_8, 0)
+        cv.rectangle(src, topLeft, bottomRight, new cv.Scalar(255, 0, 0, 255), 2, cv.LINE_8, 0)
       }
 
-      const originalSortedContours = sortedContours
-      console.log(`originalSortedContours ${originalSortedContours.length}`)
+      const copyOfSortedContours = [...sortedContours]
+      console.log(`copyOfSortedContours ${copyOfSortedContours.length}`)
 
       for (pos in notePositions) {
         const noteRect = notePositions[pos]
         console.log(`noteRect ${JSON.stringify(noteRect)}`)
 
-        for (i in originalSortedContours) {
-          const staveRect = originalSortedContours[i];
-          console.log(`staveRect ${JSON.stringify(staveRect)}`)
-
-          // Overlap left end
-          if (noteRect.y < staveRect.y && noteRect.y + noteRect.height > staveRect.y) {
-            console.log(`*** on stave line`)
-            if (noteRect.x < staveRect.x && noteRect.x + noteRect.width > staveRect.x) {
-              staveRect.x = staveRect.x + 10
-              staveRect.y = staveRect.y + 5
-              staveRect.width = staveRect.width - 20
-
-              const leftStave = {
-                x: staveRect.x + 10,
-                y: staveRect.y + 5,
-                width: staveRect.width - 20,
-                height: staveRect.height
-              };
-
-              console.log(`moving stave right ${JSON.stringify(leftStave)}`)
-              sortedContours.push(leftStave);
-            }
-            else {
-              if (noteRect.x < staveRect.x + staveRect.width && noteRect.x + noteRect.width > staveRect.x + staveRect.width) {
-                staveRect.y = staveRect.y + 5
-                staveRect.width = staveRect.width - 10
-
-                const leftStave = {
-                  x: staveRect.x,
-                  y: staveRect.y + 5,
-                  width: staveRect.width - 10,
-                  height: staveRect.height
-                };
-
-                console.log(`reducing stave length ${JSON.stringify(leftStave)}`)
-                sortedContours.push(leftStave);
-              }
-            }
-          }
+        for (i in copyOfSortedContours) {
+          const staveRect = copyOfSortedContours[i];
 
           // Overlap?
           if (noteRect.y - (noteRect.height / 2) < staveRect.y && noteRect.y + noteRect.height > staveRect.y) {
             console.log(`*** overlap, splitting stave into two`)
+            console.log(`staveRect ${JSON.stringify(staveRect)}`)
             const leftStave = {
               x: staveRect.x,
               y: staveRect.y,
-              width: noteRect.x - staveRect.x - (noteRect.width / 2),
+              width: noteRect.x - staveRect.x,
               height: staveRect.height + 5,
               real: true
             };
             const rightStave = {
-              x: noteRect.x + (noteRect.width / 2),
+              x: noteRect.x + noteRect.width,
               y: staveRect.y,
-              width: (staveRect.x + staveRect.width - noteRect.x),
+              width: (staveRect.x + staveRect.width - noteRect.x - noteRect.width),
               height: staveRect.height + 5,
               real: true
             };
 
-            //TODO: are the staves already around the notes?
+            const index = sortedContours.findIndex(item => item.y === staveRect.y);
+            // var index = sortedContours.map(function (e) { return e.y; }).indexOf(staveRect.y);
             console.log(`adding left ${JSON.stringify(leftStave)}`)
-            sortedContours.push(leftStave);
+            sortedContours.splice(index, 0, leftStave);
             console.log(`adding right ${JSON.stringify(rightStave)}`)
-            sortedContours.push(rightStave);
+            sortedContours.splice(index, 0, rightStave);
+
+            //TODO: Remove original element
+            // const oldIndex = sortedContours.findIndex(item => item.y === staveRect.y && item.x === staveRect.x && item.width == staveRect.width);
+            // sortedContours.splice(oldIndex, 1)
           }
         }
       }
-      //TODO: Make gaps in the horizontal staves where the rectangles are
-
-      // cv.imshow('canvasOutput', src);
-
-      console.info('3')
 
       // draw contours
       let colour_idx = 0;
+      let colour = colours[colour_idx];
+
+      let previousStaveY = 0
       for (i in sortedContours) {
         const rect = sortedContours[i];
+        console.log(`=> stave x ${rect.x} y ${rect.y} real ${rect.real}`)
 
-        // Only draw horizontal lines  which are long enough to be considered part of the stave
+        // Only draw real (manually added) horizontal lines or those which are long enough to be considered part of the stave
         if (rect.real || rect.width > maxLength / 2) {
-          let colour = colours[colour_idx];
-          colour_idx = colour_idx + 1;
-          if (colour_idx == colours.length) {
-            colour_idx = 0;
+          if (rect.y != previousStaveY) {
+            console.log(`changing colour as stave y has changed from ${previousStaveY} to x ${rect.x} y ${rect.y} real ${rect.real}`)
+
+            previousStaveY = rect.y
+            colour_idx = colour_idx + 1;
+            if (colour_idx == colours.length) {
+              colour_idx = 0;
+            }
+            colour = colours[colour_idx];
           }
-          cv.rectangle(src,
-            new cv.Point(rect.x, rect.y),
-            new cv.Point(rect.x + rect.width, rect.y + rect.height),
-            colour,
-            1)
+          else {
+            console.log(`keeping colour`)
+          }
+
+          if (rect.real) {
+            cv.rectangle(src,
+              new cv.Point(rect.x, rect.y),
+              new cv.Point(rect.x + rect.width, rect.y + rect.height),
+              colour,
+              -1)
+          }
+          else {
+            cv.rectangle(src,
+              new cv.Point(rect.x, rect.y),
+              new cv.Point(rect.x + rect.width, rect.y + rect.height),
+              colour,
+              1)
+          }
         }
       }
 
