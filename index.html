@@ -191,6 +191,10 @@
       const copyOfSortedContours = [...sortedContours]
       console.log(`copyOfSortedContours ${copyOfSortedContours.length}`)
 
+      //TODO: loop through stave list and find all the notes on that stave rather than looping through the notes->staves
+      //TODO: would make thing cleared as to whats happening
+      //TOOD: Put everything into clean methods
+
       for (pos in notePositions) {
         const noteRect = notePositions[pos]
         console.log(`noteRect ${JSON.stringify(noteRect)}`)
