@@ -146,30 +146,11 @@
       //                         [ 0, -1, 0]], dtype=np.uint8)
 
       // Find the notes
-      console.info('1')
       let mask = new cv.Mat()
-      // let dst2 = new cv.Mat()
-
-      // img_rgb = cv.imread('mario.png')
-      // img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
-      // template = cv.imread('mario_coin.png',0)
-      // w, h = template.shape[::-1]
-      // res = cv.matchTemplate(img_gray,template,cv.TM_CCOEFF_NORMED)
-      // threshold = 0.8
-      // loc = np.where( res >= threshold)
-      // for pt in zip(*loc[::-1]):
-      //     cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-
-      console.info('2')
-
       let threshold = 0.50
       max_val = 1
       counter = 0
-
-
       let notePositions = []
-
-      console.log('3')
 
       let matched = new cv.Mat();
       cv.matchTemplate(
@@ -177,13 +158,12 @@
         wholeNote2,
         matched,
         cv.TM_CCOEFF_NORMED,
-        // mask
       )
 
 
       let maxVal = null
       let minVal = null
-      while (counter < 100) {// && max_val > threshold) { // && counter < 20) {
+      while (counter < 1) { //1000) {
         counter = counter + 1
 
         const minMax = cv.minMaxLoc(matched);
@@ -198,13 +178,7 @@
           break;
         }
 
-        console.info(`max_val ${maxVal}`)
-        console.info(`result ${JSON.stringify(minMax)}`)
-
-        // let maxPoint = result.maxLoc
-        // let point = new cv.Point(maxPoint.x + wholeNote.cols, maxPoint.y + wholeNote.rows)
-
-        // notePositions.push({ x: maxPoint.x, y: maxPoint.y, width: wholeNote.cols, height: wholeNote.rows });
+        notePositions.push({ x: x, y: y, width: wholeNote2.cols, height: wholeNote2.rows });
 
         const topLeft = new cv.Point(x, y)
         const bottomRight = new cv.Point(x + wholeNote2.cols, y + wholeNote2.rows)
@@ -212,8 +186,6 @@
         let rect = new cv.Rect(x, y, x + 50, y + 50);
         cv.rectangle(matched, topLeft, bottomRight, new cv.Scalar(0, 0, 0, 255), cv.FILLED, cv.LINE_8, 0)
         cv.rectangle(src, topLeft, bottomRight, new cv.Scalar(255, 0, 0, 255), 3, cv.LINE_8, 0)
-
-        // cv.imshow('canvasOutput', matched);
       }
 
       const originalSortedContours = sortedContours
@@ -227,20 +199,58 @@
           const staveRect = originalSortedContours[i];
           console.log(`staveRect ${JSON.stringify(staveRect)}`)
 
+          // Overlap left end
+          if (noteRect.y < staveRect.y && noteRect.y + noteRect.height > staveRect.y) {
+            console.log(`*** on stave line`)
+            if (noteRect.x < staveRect.x && noteRect.x + noteRect.width > staveRect.x) {
+              staveRect.x = staveRect.x + 10
+              staveRect.y = staveRect.y + 5
+              staveRect.width = staveRect.width - 20
+
+              const leftStave = {
+                x: staveRect.x + 10,
+                y: staveRect.y + 5,
+                width: staveRect.width - 20,
+                height: staveRect.height
+              };
+
+              console.log(`moving stave right ${JSON.stringify(leftStave)}`)
+              sortedContours.push(leftStave);
+            }
+            else {
+              if (noteRect.x < staveRect.x + staveRect.width && noteRect.x + noteRect.width > staveRect.x + staveRect.width) {
+                staveRect.y = staveRect.y + 5
+                staveRect.width = staveRect.width - 10
+
+                const leftStave = {
+                  x: staveRect.x,
+                  y: staveRect.y + 5,
+                  width: staveRect.width - 10,
+                  height: staveRect.height
+                };
+
+                console.log(`reducing stave length ${JSON.stringify(leftStave)}`)
+                sortedContours.push(leftStave);
+              }
+            }
+          }
+
           // Overlap?
           if (noteRect.y - (noteRect.height / 2) < staveRect.y && noteRect.y + noteRect.height > staveRect.y) {
-            console.log(`*** overlap`)
+            console.log(`*** overlap, splitting stave into two`)
             const leftStave = {
               x: staveRect.x,
-              y: staveRect.y + 5,
-              width: 100, //noteRect.x - staveRect.x - 10,
-              height: staveRect.height
+              y: staveRect.y,
+              width: noteRect.x - staveRect.x - (noteRect.width / 2),
+              height: staveRect.height + 5,
+              real: true
             };
             const rightStave = {
-              x: noteRect.x + 10,
-              y: staveRect.y + 5,
+              x: noteRect.x + (noteRect.width / 2),
+              y: staveRect.y,
               width: (staveRect.x + staveRect.width - noteRect.x),
-              height: staveRect.height
+              height: staveRect.height + 5,
+              real: true
             };
 
             //TODO: are the staves already around the notes?
@@ -263,7 +273,7 @@
         const rect = sortedContours[i];
 
         // Only draw horizontal lines  which are long enough to be considered part of the stave
-        if (rect.width > maxLength / 2) {
+        if (rect.real || rect.width > maxLength / 2) {
           let colour = colours[colour_idx];
           colour_idx = colour_idx + 1;
           if (colour_idx == colours.length) {
