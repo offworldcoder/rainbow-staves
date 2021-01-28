@@ -66,15 +66,11 @@
         return sortableContours;
       }
 
-      function myCode() {
+      imgElement.onload = function () {
         let wholeNote = cv.imread("wholenote", 0);
-
         let src = cv.imread(imgElement);
-        let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
-        src.copyTo(dst);
 
-        // Preprocess
-        // Convert everything to grayscale
+        // Preprocess Convert everything to grayscale
         gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
 
@@ -96,11 +92,12 @@
         drawStaves(sortedContours, src, maxLength);
         cv.imshow("canvasOutput", src);
 
+        // Clean up
+        wholeNote2.delete();
+        wholeNote.delete();
         src.delete();
-        dst.delete();
-      }
-      imgElement.onload = function () {
-        myCode();
+        gray.delete();
+        thresh.delete();
       };
       function onOpenCvReady() {
         document.getElementById("loading").style.display = "none";
