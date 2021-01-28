@@ -2,16 +2,25 @@
 <html>
 
 <head>
+  <style>
+    body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+  </style>
   <meta charset="utf-8" />
   <title>Rainbow Staves</title>
 </head>
 
 <body>
-  <h2>Rainbow Staves</h2>
-  <p id="status">Rainbow Stave is loading...</p>
+  <h1>Rainbow Staves</h1>
+    <p id="status"></p>
   <div>
-    <div class="inputoutput">
-      <img id="wholenote" src='./wholenote.png' />
+    <div class="loading" id="loading">
+      <h1>Loading...</h1>
+    </div>
+    <div class="inputoutput" id="inputoutput" style="display:none;">
+      <img id="wholenote" src='./wholenote.png' style='display:none;'/>
       <canvas id="canvasOutput"></canvas>
       <img id="imageSrc" alt="" />
       <div class="caption">
@@ -232,16 +241,15 @@
 
       cv.imshow('canvasOutput', src);
 
-      //
       src.delete();
       dst.delete();
-      // hierarchy.delete();
-      // contours.delete();
     }
     imgElement.onload = function () {
       myCode();
     };
     function onOpenCvReady() {
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('inputoutput').style.display = 'block'
       document.getElementById('status').innerHTML =
         'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer.';
     }
