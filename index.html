@@ -1,309 +1,347 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    </style>
+    <meta charset="utf-8" />
+    <title>Rainbow Staves</title>
+  </head>
 
-<head>
-  <style>
-    body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-}
-  </style>
-  <meta charset="utf-8" />
-  <title>Rainbow Staves</title>
-</head>
-
-<body>
-  <h1>Rainbow Staves</h1>
+  <body>
+    <h1>Rainbow Staves</h1>
     <p id="status"></p>
-  <div>
-    <div class="loading" id="loading">
-      <h1>Loading...</h1>
-    </div>
-    <div class="inputoutput" id="inputoutput" style="display:none;">
-      <img id="wholenote" src='./wholenote.png' style='display:none;'/>
-      <canvas id="canvasOutput"></canvas>
-      <img id="imageSrc" alt="" />
-      <div class="caption">
-        Sheet Music file to Colourize ->
-        <input type="file" id="fileInput" name="file" />
+    <div>
+      <div class="loading" id="loading">
+        <h1>Loading...</h1>
+      </div>
+      <div class="inputoutput" id="inputoutput" style="display: none">
+        <img id="wholenote" src="./wholenote.png" style="display: none" />
+        <canvas id="canvasOutput"></canvas>
+        <img id="imageSrc" alt="" />
+        <div class="caption">
+          Sheet Music file to Colourize ->
+          <input type="file" id="fileInput" name="file" />
+        </div>
       </div>
     </div>
-  </div>
-  <script type="text/javascript">
-    //TODO:
-    // * SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
-    // REMOVE HORIZONTAL LINES THAT ARE TOO SHORT (ONLY USE THE LONG ONES)
-    // DRAW OVER NOTES to place them on top of the staves unless there's a better approach
-    // SAVE OPTIONS
-    // use PDF's
+    <script type="text/javascript">
+      //TODO:
+      // * SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
+      // REMOVE HORIZONTAL LINES THAT ARE TOO SHORT (ONLY USE THE LONG ONES)
+      // DRAW OVER NOTES to place them on top of the staves unless there's a better approach
+      // SAVE OPTIONS
+      // use PDF's
 
-    let imgElement = document.getElementById('imageSrc');
-    let inputElement = document.getElementById('fileInput');
-    inputElement.addEventListener(
-      'change',
-      (e) => {
-        imgElement.src = URL.createObjectURL(e.target.files[0]);
-      },
-      false
-    );
+      let imgElement = document.getElementById("imageSrc");
+      let inputElement = document.getElementById("fileInput");
+      inputElement.addEventListener(
+        "change",
+        (e) => {
+          imgElement.src = URL.createObjectURL(e.target.files[0]);
+        },
+        false
+      );
 
-    function sortContours(contours) {
-      let sortableContours = [];
-      for (let i = 0; i < contours.size(); i++) {
-        const rect = cv.boundingRect(contours.get(i));
-        sortableContours.push({ x: rect.x, y: rect.y, width: rect.width, height: rect.height });
-      }
-
-      //Sort 'em
-      sortableContours = sortableContours.sort((item1, item2) => {
-        return (item1.y < item2.y) ? -1 : (item1.y > item2.y) ? 1 : 0;
-      });
-
-      return sortableContours
-    }
-
-    function myCode() {
-      let wholeNote = cv.imread('wholenote', 0)
-
-      let src = cv.imread(imgElement);
-      let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
-      src.copyTo(dst);
-
-      // Preprocess
-      // Convert everything to grayscale
-      gray = new cv.Mat();
-      cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
-
-      wholeNote2 = new cv.Mat();
-      cv.cvtColor(wholeNote, wholeNote2, cv.COLOR_BGR2GRAY, 0);
-
-      thresh = new cv.Mat();
-      cv.threshold(
-        gray,
-        thresh,
-        0,
-        255,
-        cv.THRESH_BINARY_INV + cv.THRESH_OTSU
-      )[1];
-
-      const { maxLength, sortedContours } = findTheStaves(thresh)
-
-
-      //TODO: draw over the notes to place them on top of the staves unless there's a better approach
-      // edge_kernel = np.array([[ 0.0, -1, 0],
-      //                         [ -1, 4, -1],
-      //                         [ 0, -1, 0]], dtype=np.uint8)
-
-      // Find the notes
-      let mask = new cv.Mat()
-      let threshold = 0.50
-      max_val = 1
-      counter = 0
-      let notePositions = []
-
-      let matched = new cv.Mat();
-      cv.matchTemplate(
-        gray,
-        wholeNote2,
-        matched,
-        cv.TM_CCOEFF_NORMED,
-      )
-
-
-      let maxVal = null
-      let minVal = null
-      while (counter < 10) { //1000) {
-        counter = counter + 1
-
-        const minMax = cv.minMaxLoc(matched);
-        const x = minMax.maxLoc.x;
-        const y = minMax.maxLoc.y;
-
-        if (maxVal === null) {
-          maxVal = minMax.maxVal;
-        }
-        const value = minMax.maxVal;
-        if (value < maxVal * 0.9) {
-          break;
+      function sortContours(contours) {
+        let sortableContours = [];
+        for (let i = 0; i < contours.size(); i++) {
+          const rect = cv.boundingRect(contours.get(i));
+          sortableContours.push({
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          });
         }
 
-        notePositions.push({ x: x, y: y, width: wholeNote2.cols, height: wholeNote2.rows });
+        //Sort 'em
+        sortableContours = sortableContours.sort((item1, item2) => {
+          return item1.y < item2.y ? -1 : item1.y > item2.y ? 1 : 0;
+        });
 
-        const topLeft = new cv.Point(x, y)
-        const bottomRight = new cv.Point(x + wholeNote2.cols, y + wholeNote2.rows)
-
-        let rect = new cv.Rect(x, y, x + 50, y + 50);
-        cv.rectangle(matched, topLeft, bottomRight, new cv.Scalar(0, 0, 0, 255), cv.FILLED, cv.LINE_8, 0)
-        cv.rectangle(src, topLeft, bottomRight, new cv.Scalar(255, 0, 0, 255), 2, cv.LINE_8, 0)
+        return sortableContours;
       }
 
-      const copyOfSortedContours = [...sortedContours]
-      console.log(`copyOfSortedContours ${copyOfSortedContours.length}`)
+      function myCode() {
+        let wholeNote = cv.imread("wholenote", 0);
 
-      //TODO: loop through stave list and find all the notes on that stave rather than looping through the notes->staves
-      //TODO: would make thing cleared as to whats happening
-      //TOOD: Put everything into clean methods
+        let src = cv.imread(imgElement);
+        let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC4);
+        src.copyTo(dst);
 
-      for (pos in notePositions) {
-        const noteRect = notePositions[pos]
-        console.log(`noteRect ${JSON.stringify(noteRect)}`)
+        // Preprocess
+        // Convert everything to grayscale
+        gray = new cv.Mat();
+        cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
 
-        for (i in copyOfSortedContours) {
-          const staveRect = copyOfSortedContours[i];
+        wholeNote2 = new cv.Mat();
+        cv.cvtColor(wholeNote, wholeNote2, cv.COLOR_BGR2GRAY, 0);
 
-          // Overlap?
-          if (noteRect.y - (noteRect.height / 2) < staveRect.y && noteRect.y + noteRect.height > staveRect.y) {
-            console.log(`*** overlap, splitting stave into two`)
-            console.log(`staveRect ${JSON.stringify(staveRect)}`)
-            const leftStave = {
-              x: staveRect.x,
-              y: staveRect.y,
-              width: noteRect.x - staveRect.x,
-              height: staveRect.height + 5,
-              real: true
-            };
-            const rightStave = {
-              x: noteRect.x + noteRect.width,
-              y: staveRect.y,
-              width: (staveRect.x + staveRect.width - noteRect.x - noteRect.width),
-              height: staveRect.height + 5,
-              real: true
-            };
+        thresh = new cv.Mat();
+        cv.threshold(
+          gray,
+          thresh,
+          0,
+          255,
+          cv.THRESH_BINARY_INV + cv.THRESH_OTSU
+        )[1];
 
-            const index = sortedContours.findIndex(item => item.y === staveRect.y);
-            // var index = sortedContours.map(function (e) { return e.y; }).indexOf(staveRect.y);
-            console.log(`adding left ${JSON.stringify(leftStave)}`)
-            sortedContours.splice(index, 0, leftStave);
-            console.log(`adding right ${JSON.stringify(rightStave)}`)
-            sortedContours.splice(index, 0, rightStave);
+        const { maxLength, sortedContours } = findTheStaves(thresh);
 
-            //TODO: Remove original element
-            // const oldIndex = sortedContours.findIndex(item => item.y === staveRect.y && item.x === staveRect.x && item.width == staveRect.width);
-            // sortedContours.splice(oldIndex, 1)
+        //TODO: draw over the notes to place them on top of the staves unless there's a better approach
+        // edge_kernel = np.array([[ 0.0, -1, 0],
+        //                         [ -1, 4, -1],
+        //                         [ 0, -1, 0]], dtype=np.uint8)
+
+        // Find the notes
+        let mask = new cv.Mat();
+        let threshold = 0.5;
+        max_val = 1;
+        counter = 0;
+        let notePositions = [];
+
+        let matched = new cv.Mat();
+        cv.matchTemplate(gray, wholeNote2, matched, cv.TM_CCOEFF_NORMED);
+
+        let maxVal = null;
+        let minVal = null;
+        while (counter < 10) {
+          //1000) {
+          counter = counter + 1;
+
+          const minMax = cv.minMaxLoc(matched);
+          const x = minMax.maxLoc.x;
+          const y = minMax.maxLoc.y;
+
+          if (maxVal === null) {
+            maxVal = minMax.maxVal;
           }
+          const value = minMax.maxVal;
+          if (value < maxVal * 0.9) {
+            break;
+          }
+
+          notePositions.push({
+            x: x,
+            y: y,
+            width: wholeNote2.cols,
+            height: wholeNote2.rows,
+          });
+
+          const topLeft = new cv.Point(x, y);
+          const bottomRight = new cv.Point(
+            x + wholeNote2.cols,
+            y + wholeNote2.rows
+          );
+
+          let rect = new cv.Rect(x, y, x + 50, y + 50);
+          cv.rectangle(
+            matched,
+            topLeft,
+            bottomRight,
+            new cv.Scalar(0, 0, 0, 255),
+            cv.FILLED,
+            cv.LINE_8,
+            0
+          );
+          cv.rectangle(
+            src,
+            topLeft,
+            bottomRight,
+            new cv.Scalar(255, 0, 0, 255),
+            2,
+            cv.LINE_8,
+            0
+          );
         }
-      }
 
-      // draw contours
-      const colours = [
-        [245, 80, 87, 255],
-        [237, 177, 231, 255],
-        [67, 74, 220, 255],
-        [165, 216, 180, 255],
-        [223, 230, 100, 255],
-        [252, 172, 60, 255],
-        [245, 80, 87, 255],
-        [213, 95, 204, 255],
-        [67, 74, 220, 255],
-        [165, 216, 180, 255],
-      ];
+        const copyOfSortedContours = [...sortedContours];
+        console.log(`copyOfSortedContours ${copyOfSortedContours.length}`);
 
-      let colour_idx = 0;
-      let colour = colours[colour_idx];
+        //TODO: loop through stave list and find all the notes on that stave rather than looping through the notes->staves
+        //TODO: would make thing cleared as to whats happening
+        //TOOD: Put everything into clean methods
 
-      let previousStaveY = 0
-      for (i in sortedContours) {
-        const rect = sortedContours[i];
-        console.log(`=> stave x ${rect.x} y ${rect.y} real ${rect.real}`)
+        for (pos in notePositions) {
+          const noteRect = notePositions[pos];
+          console.log(`noteRect ${JSON.stringify(noteRect)}`);
 
-        // Only draw real (manually added) horizontal lines or those which are long enough to be considered part of the stave
-        if (rect.real || rect.width > maxLength / 2) {
-          if (rect.y != previousStaveY) {
-            console.log(`changing colour as stave y has changed from ${previousStaveY} to x ${rect.x} y ${rect.y} real ${rect.real}`)
+          for (i in copyOfSortedContours) {
+            const staveRect = copyOfSortedContours[i];
 
-            previousStaveY = rect.y
-            colour_idx = colour_idx + 1;
-            if (colour_idx == colours.length) {
-              colour_idx = 0;
+            // Overlap?
+            if (
+              noteRect.y - noteRect.height / 2 < staveRect.y &&
+              noteRect.y + noteRect.height > staveRect.y
+            ) {
+              console.log(`*** overlap, splitting stave into two`);
+              console.log(`staveRect ${JSON.stringify(staveRect)}`);
+              const leftStave = {
+                x: staveRect.x,
+                y: staveRect.y,
+                width: noteRect.x - staveRect.x,
+                height: staveRect.height + 5,
+                real: true,
+              };
+              const rightStave = {
+                x: noteRect.x + noteRect.width,
+                y: staveRect.y,
+                width:
+                  staveRect.x + staveRect.width - noteRect.x - noteRect.width,
+                height: staveRect.height + 5,
+                real: true,
+              };
+
+              const index = sortedContours.findIndex(
+                (item) => item.y === staveRect.y
+              );
+              // var index = sortedContours.map(function (e) { return e.y; }).indexOf(staveRect.y);
+              console.log(`adding left ${JSON.stringify(leftStave)}`);
+              sortedContours.splice(index, 0, leftStave);
+              console.log(`adding right ${JSON.stringify(rightStave)}`);
+              sortedContours.splice(index, 0, rightStave);
+
+              //TODO: Remove original element
+              // const oldIndex = sortedContours.findIndex(item => item.y === staveRect.y && item.x === staveRect.x && item.width == staveRect.width);
+              // sortedContours.splice(oldIndex, 1)
             }
-            colour = colours[colour_idx];
-          }
-          else {
-            console.log(`keeping colour`)
-          }
-
-          if (rect.real) {
-            cv.rectangle(src,
-              new cv.Point(rect.x, rect.y),
-              new cv.Point(rect.x + rect.width, rect.y + rect.height),
-              colour,
-              -1)
-          }
-          else {
-            cv.rectangle(src,
-              new cv.Point(rect.x, rect.y),
-              new cv.Point(rect.x + rect.width, rect.y + rect.height),
-              colour,
-              1)
           }
         }
+
+        // draw contours
+        const colours = [
+          [245, 80, 87, 255],
+          [237, 177, 231, 255],
+          [67, 74, 220, 255],
+          [165, 216, 180, 255],
+          [223, 230, 100, 255],
+          [252, 172, 60, 255],
+          [245, 80, 87, 255],
+          [213, 95, 204, 255],
+          [67, 74, 220, 255],
+          [165, 216, 180, 255],
+        ];
+
+        let colour_idx = 0;
+        let colour = colours[colour_idx];
+
+        let previousStaveY = 0;
+        for (i in sortedContours) {
+          const rect = sortedContours[i];
+          console.log(`=> stave x ${rect.x} y ${rect.y} real ${rect.real}`);
+
+          // Only draw real (manually added) horizontal lines or those which are long enough to be considered part of the stave
+          if (rect.real || rect.width > maxLength / 2) {
+            if (rect.y != previousStaveY) {
+              console.log(
+                `changing colour as stave y has changed from ${previousStaveY} to x ${rect.x} y ${rect.y} real ${rect.real}`
+              );
+
+              previousStaveY = rect.y;
+              colour_idx = colour_idx + 1;
+              if (colour_idx == colours.length) {
+                colour_idx = 0;
+              }
+              colour = colours[colour_idx];
+            } else {
+              console.log(`keeping colour`);
+            }
+
+            if (rect.real) {
+              cv.rectangle(
+                src,
+                new cv.Point(rect.x, rect.y),
+                new cv.Point(rect.x + rect.width, rect.y + rect.height),
+                colour,
+                -1
+              );
+            } else {
+              cv.rectangle(
+                src,
+                new cv.Point(rect.x, rect.y),
+                new cv.Point(rect.x + rect.width, rect.y + rect.height),
+                colour,
+                1
+              );
+            }
+          }
+        }
+
+        cv.imshow("canvasOutput", src);
+
+        src.delete();
+        dst.delete();
       }
-
-      cv.imshow('canvasOutput', src);
-
-      src.delete();
-      dst.delete();
-    }
-    imgElement.onload = function () {
-      myCode();
-    };
-    function onOpenCvReady() {
-      document.getElementById('loading').style.display = 'none'
-      document.getElementById('inputoutput').style.display = 'block'
-      document.getElementById('status').innerHTML =
-        'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer.';
-    }
-    function findTheStaves(thresh) {
-            // Find Staves
-            let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
-      let anchor = new cv.Point(-1, -1);
-
-      detect_horizontal = new cv.Mat();
-      cv.morphologyEx(
-        thresh,
-        detect_horizontal,
-        cv.MORPH_OPEN,
-        horizontal_kernel,
-        anchor,
-        2
-      );
-
-      let contours = new cv.MatVector();
-      let hierarchy = new cv.Mat();
-
-      cv.findContours(
-        detect_horizontal,
-        contours,
-        hierarchy,
-        cv.RETR_EXTERNAL,
-        cv.CHAIN_APPROX_SIMPLE
-      );
-
-      const sortedContours = sortContours(contours)
-
-      // work out how long the staves are (mostly)
-      let maxLength = 0
-      let minLength = 9999
-      let total = 0
-      let counter = 0
-      for (i in sortedContours) {
-        counter += 1
-        const rect = sortedContours[i];
-        maxLength = Math.max(maxLength, rect.width);
-        minLength = Math.min(minLength, rect.width)
-        total = total + rect.width;
+      imgElement.onload = function () {
+        myCode();
+      };
+      function onOpenCvReady() {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("inputoutput").style.display = "block";
+        document.getElementById("status").innerHTML =
+          'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer.';
       }
+      function findTheStaves(thresh) {
+        // Find Staves
+        let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
+        let anchor = new cv.Point(-1, -1);
 
-      hierarchy.delete();
-      contours.delete();
+        detect_horizontal = new cv.Mat();
+        cv.morphologyEx(
+          thresh,
+          detect_horizontal,
+          cv.MORPH_OPEN,
+          horizontal_kernel,
+          anchor,
+          2
+        );
 
-      console.log(`sortedContours.length ${counter}`)
-      const averageWidth = total / counter;
-      console.log(`length min ${minLength} max ${maxLength} average ${averageWidth}`)
-      return {maxLength, sortedContours}
-    }
-  </script>
-  <script async src="https://docs.opencv.org/3.4/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
-</body>
+        let contours = new cv.MatVector();
+        let hierarchy = new cv.Mat();
 
+        cv.findContours(
+          detect_horizontal,
+          contours,
+          hierarchy,
+          cv.RETR_EXTERNAL,
+          cv.CHAIN_APPROX_SIMPLE
+        );
+
+        const sortedContours = sortContours(contours);
+
+        // work out how long the staves are (mostly)
+        let maxLength = 0;
+        let minLength = 9999;
+        let total = 0;
+        let counter = 0;
+        for (i in sortedContours) {
+          counter += 1;
+          const rect = sortedContours[i];
+          maxLength = Math.max(maxLength, rect.width);
+          minLength = Math.min(minLength, rect.width);
+          total = total + rect.width;
+        }
+
+        hierarchy.delete();
+        contours.delete();
+
+        console.log(`sortedContours.length ${counter}`);
+        const averageWidth = total / counter;
+        console.log(
+          `length min ${minLength} max ${maxLength} average ${averageWidth}`
+        );
+        return { maxLength, sortedContours };
+      }
+    </script>
+    <script
+      async
+      src="https://docs.opencv.org/3.4/opencv.js"
+      onload="onOpenCvReady();"
+      type="text/javascript"
+    ></script>
+  </body>
 </html>
