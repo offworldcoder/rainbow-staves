@@ -50,11 +50,6 @@
         return (item1.y < item2.y) ? -1 : (item1.y > item2.y) ? 1 : 0;
       });
 
-      // for (idx in sortableContours) {
-      //   const contour = sortableContours[idx]
-      //   console.log(`sorted contour ${JSON.stringify(contour)}`)
-      // }
-
       return sortableContours
     }
 
@@ -66,6 +61,7 @@
       src.copyTo(dst);
 
       // Preprocess
+      // Convert everything to grayscale
       gray = new cv.Mat();
       cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
 
@@ -81,63 +77,7 @@
         cv.THRESH_BINARY_INV + cv.THRESH_OTSU
       )[1];
 
-      // Find Staves
-      let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
-      let anchor = new cv.Point(-1, -1);
-
-      detect_horizontal = new cv.Mat();
-      cv.morphologyEx(
-        thresh,
-        detect_horizontal,
-        cv.MORPH_OPEN,
-        horizontal_kernel,
-        anchor,
-        2
-      );
-
-      let contours = new cv.MatVector();
-      let hierarchy = new cv.Mat();
-
-      cv.findContours(
-        detect_horizontal,
-        contours,
-        hierarchy,
-        cv.RETR_EXTERNAL,
-        cv.CHAIN_APPROX_SIMPLE
-      );
-
-      const colours = [
-        [245, 80, 87, 255],
-        [237, 177, 231, 255],
-        [67, 74, 220, 255],
-        [165, 216, 180, 255],
-        [223, 230, 100, 255],
-        [252, 172, 60, 255],
-        [245, 80, 87, 255],
-        [213, 95, 204, 255],
-        [67, 74, 220, 255],
-        [165, 216, 180, 255],
-      ];
-
-      const sortedContours = sortContours(contours)
-
-      // work out how long the staves are (mostly)
-      let maxLength = 0
-      let minLength = 9999
-      let total = 0
-      let counter = 0
-      for (i in sortedContours) {
-        counter += 1
-        const rect = sortedContours[i];
-        maxLength = Math.max(maxLength, rect.width);
-        minLength = Math.min(minLength, rect.width)
-        total = total + rect.width;
-      }
-
-      console.log(`sortedContours.length ${counter}`)
-      const averageWidth = total / counter;
-      console.log(`length min ${minLength} max ${maxLength} average ${averageWidth}`)
-
+      const { maxLength, sortedContours } = findTheStaves(thresh)
 
 
       //TODO: draw over the notes to place them on top of the staves unless there's a better approach
@@ -163,7 +103,7 @@
 
       let maxVal = null
       let minVal = null
-      while (counter < 1000) {
+      while (counter < 10) { //1000) {
         counter = counter + 1
 
         const minMax = cv.minMaxLoc(matched);
@@ -236,6 +176,19 @@
       }
 
       // draw contours
+      const colours = [
+        [245, 80, 87, 255],
+        [237, 177, 231, 255],
+        [67, 74, 220, 255],
+        [165, 216, 180, 255],
+        [223, 230, 100, 255],
+        [252, 172, 60, 255],
+        [245, 80, 87, 255],
+        [213, 95, 204, 255],
+        [67, 74, 220, 255],
+        [165, 216, 180, 255],
+      ];
+
       let colour_idx = 0;
       let colour = colours[colour_idx];
 
@@ -282,8 +235,8 @@
       //
       src.delete();
       dst.delete();
-      hierarchy.delete();
-      contours.delete();
+      // hierarchy.delete();
+      // contours.delete();
     }
     imgElement.onload = function () {
       myCode();
@@ -291,6 +244,55 @@
     function onOpenCvReady() {
       document.getElementById('status').innerHTML =
         'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer.';
+    }
+    function findTheStaves(thresh) {
+            // Find Staves
+            let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
+      let anchor = new cv.Point(-1, -1);
+
+      detect_horizontal = new cv.Mat();
+      cv.morphologyEx(
+        thresh,
+        detect_horizontal,
+        cv.MORPH_OPEN,
+        horizontal_kernel,
+        anchor,
+        2
+      );
+
+      let contours = new cv.MatVector();
+      let hierarchy = new cv.Mat();
+
+      cv.findContours(
+        detect_horizontal,
+        contours,
+        hierarchy,
+        cv.RETR_EXTERNAL,
+        cv.CHAIN_APPROX_SIMPLE
+      );
+
+      const sortedContours = sortContours(contours)
+
+      // work out how long the staves are (mostly)
+      let maxLength = 0
+      let minLength = 9999
+      let total = 0
+      let counter = 0
+      for (i in sortedContours) {
+        counter += 1
+        const rect = sortedContours[i];
+        maxLength = Math.max(maxLength, rect.width);
+        minLength = Math.min(minLength, rect.width)
+        total = total + rect.width;
+      }
+
+      hierarchy.delete();
+      contours.delete();
+
+      console.log(`sortedContours.length ${counter}`)
+      const averageWidth = total / counter;
+      console.log(`length min ${minLength} max ${maxLength} average ${averageWidth}`)
+      return {maxLength, sortedContours}
     }
   </script>
   <script async src="https://docs.opencv.org/3.4/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
