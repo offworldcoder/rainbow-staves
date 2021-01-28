@@ -91,73 +91,7 @@
         )[1];
 
         const { maxLength, sortedContours } = findTheStaves(thresh);
-
-        //TODO: draw over the notes to place them on top of the staves unless there's a better approach
-        // edge_kernel = np.array([[ 0.0, -1, 0],
-        //                         [ -1, 4, -1],
-        //                         [ 0, -1, 0]], dtype=np.uint8)
-
-        // Find the notes
-        let mask = new cv.Mat();
-        let threshold = 0.5;
-        max_val = 1;
-        counter = 0;
-        let notePositions = [];
-
-        let matched = new cv.Mat();
-        cv.matchTemplate(gray, wholeNote2, matched, cv.TM_CCOEFF_NORMED);
-
-        let maxVal = null;
-        let minVal = null;
-        while (counter < 10) {
-          //1000) {
-          counter = counter + 1;
-
-          const minMax = cv.minMaxLoc(matched);
-          const x = minMax.maxLoc.x;
-          const y = minMax.maxLoc.y;
-
-          if (maxVal === null) {
-            maxVal = minMax.maxVal;
-          }
-          const value = minMax.maxVal;
-          if (value < maxVal * 0.9) {
-            break;
-          }
-
-          notePositions.push({
-            x: x,
-            y: y,
-            width: wholeNote2.cols,
-            height: wholeNote2.rows,
-          });
-
-          const topLeft = new cv.Point(x, y);
-          const bottomRight = new cv.Point(
-            x + wholeNote2.cols,
-            y + wholeNote2.rows
-          );
-
-          let rect = new cv.Rect(x, y, x + 50, y + 50);
-          cv.rectangle(
-            matched,
-            topLeft,
-            bottomRight,
-            new cv.Scalar(0, 0, 0, 255),
-            cv.FILLED,
-            cv.LINE_8,
-            0
-          );
-          cv.rectangle(
-            src,
-            topLeft,
-            bottomRight,
-            new cv.Scalar(255, 0, 0, 255),
-            2,
-            cv.LINE_8,
-            0
-          );
-        }
+        const notePositions = findTheNotes(gray, src);
 
         const copyOfSortedContours = [...sortedContours];
         console.log(`copyOfSortedContours ${copyOfSortedContours.length}`);
@@ -335,6 +269,71 @@
           `length min ${minLength} max ${maxLength} average ${averageWidth}`
         );
         return { maxLength, sortedContours };
+      }
+
+      function findTheNotes(gray, src) {
+        // Find the notes
+        let mask = new cv.Mat();
+        let threshold = 0.5;
+        max_val = 1;
+        counter = 0;
+        let notePositions = [];
+
+        let matched = new cv.Mat();
+        cv.matchTemplate(gray, wholeNote2, matched, cv.TM_CCOEFF_NORMED);
+
+        let maxVal = null;
+        let minVal = null;
+        while (counter < 10) {
+          //1000) {
+          counter = counter + 1;
+
+          const minMax = cv.minMaxLoc(matched);
+          const x = minMax.maxLoc.x;
+          const y = minMax.maxLoc.y;
+
+          if (maxVal === null) {
+            maxVal = minMax.maxVal;
+          }
+          const value = minMax.maxVal;
+          if (value < maxVal * 0.9) {
+            break;
+          }
+
+          notePositions.push({
+            x: x,
+            y: y,
+            width: wholeNote2.cols,
+            height: wholeNote2.rows,
+          });
+
+          const topLeft = new cv.Point(x, y);
+          const bottomRight = new cv.Point(
+            x + wholeNote2.cols,
+            y + wholeNote2.rows
+          );
+
+          let rect = new cv.Rect(x, y, x + 50, y + 50);
+          cv.rectangle(
+            matched,
+            topLeft,
+            bottomRight,
+            new cv.Scalar(0, 0, 0, 255),
+            cv.FILLED,
+            cv.LINE_8,
+            0
+          );
+          cv.rectangle(
+            src,
+            topLeft,
+            bottomRight,
+            new cv.Scalar(255, 0, 0, 255),
+            2,
+            cv.LINE_8,
+            0
+          );
+        }
+        return notePositions;
       }
     </script>
     <script
