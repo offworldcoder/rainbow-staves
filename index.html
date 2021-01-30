@@ -30,12 +30,11 @@
     </div>
     <script type="text/javascript">
       //TODO:
-      // * SORT (cnts, boundingBoxes) = sort_contours(cnts, method="top-to-bottom")
-      // REMOVE HORIZONTAL LINES THAT ARE TOO SHORT (ONLY USE THE LONG ONES)
       // DRAW OVER NOTES to place them on top of the staves unless there's a better approach
       // SAVE OPTIONS
       // use PDF's
 
+      const DEBUG_DISPLAY = true;
       let imgElement = document.getElementById("imageSrc");
       let inputElement = document.getElementById("fileInput");
       inputElement.addEventListener(
@@ -162,7 +161,6 @@
       }
 
       function findTheNotes(gray, src) {
-        // Find the notes
         let mask = new cv.Mat();
         let threshold = 0.5;
         max_val = 1;
@@ -212,15 +210,17 @@
             cv.LINE_8,
             0
           );
-          cv.rectangle(
-            src,
-            topLeft,
-            bottomRight,
-            new cv.Scalar(255, 0, 0, 255),
-            2,
-            cv.LINE_8,
-            0
-          );
+          if (DEBUG_DISPLAY) {
+            cv.rectangle(
+              src,
+              topLeft,
+              bottomRight,
+              new cv.Scalar(255, 0, 0, 255),
+              2,
+              cv.LINE_8,
+              0
+            );
+          }
         }
 
         //Sort 'em
@@ -228,9 +228,24 @@
           return item1.y == item2.y ? item1.x - item2.x : item1.y - item2.y;
         });
 
+        let noteNumber = 1;
+        for (pos in sortedNotePositions) {
+          cv.putText(
+            src,
+            String(noteNumber),
+            new cv.Point(pos.x, pos.y),
+            cv.FONT_ITALIC,
+            10,
+            new cv.Scalar(255, 0, 0, 255),
+            2
+          );
+          noteNumber += 1;
+        }
+
         return sortedNotePositions;
       }
       function cutoutNotesFromStaves(sortedContours, notePositions, src) {
+        const EXTRA_HEIGHT = 2;
         const copyOfSortedContours = [...sortedContours];
         let outputContours = [];
         console.log(`copyOfSortedContours ${copyOfSortedContours.length}`);
@@ -243,32 +258,19 @@
           );
 
           counter = counter + 1;
-          if (counter > 100) {
+          if (counter > 5) {
             console.log(`reached counter limit so exiting`);
             break;
           }
 
-          // cv.rectangle(
-          //   src,
-          //   new cv.Point(staveRect.x - 10, staveRect.y - 10),
-          //   new cv.Point(
-          //     staveRect.x + staveRect.width + 20,
-          //     staveRect.y + staveRect.height + 20
-          //   ),
-          //   new cv.Scalar(0, 0, 255, 255),
-          //   1,
-          //   cv.LINE_8,
-          //   0
-          // );
-
-          const EXTRA_HEIGHT = 2;
           let staveLeft = staveRect.x;
           let wasNotOverlap = false;
+          let verticalShift = 0;
           for (pos in notePositions) {
             const noteRect = notePositions[pos];
-            console.log(`NFS   noteRect ${JSON.stringify(noteRect)}`);
-
-            //TODO: Sort notes into left to right
+            console.log(
+              `NFS  staveLeft ${staveLeft} noteRect ${JSON.stringify(noteRect)}`
+            );
 
             if (noteRect.y > staveRect.y) {
               console.log(
@@ -286,31 +288,32 @@
               console.log(`NFS   *** overlap, splitting stave into two`);
               const leftStave = {
                 x: staveLeft,
-                y: staveRect.y,
+                y: staveRect.y + verticalShift,
                 width: noteRect.x - staveLeft,
                 height: staveRect.height + EXTRA_HEIGHT,
                 real: true,
               };
               staveLeft = noteRect.x + noteRect.width;
-              console.log(`NFS   adding left ${JSON.stringify(leftStave)}`);
+              console.log(
+                `NFS   adding left stave section ${JSON.stringify(leftStave)}`
+              );
               outputContours.push(leftStave);
+              verticalShift += 2;
             }
-
-            //TODO: add the rect of the stave
           }
+
           if (wasNotOverlap) {
             const rightStave = {
               x: staveLeft,
               y: staveRect.y,
               width: staveRect.x + staveRect.width - staveLeft,
-              height: staveRect.height + EXTRA_HEIGHT + 4,
+              height: staveRect.height + EXTRA_HEIGHT + (DEBUG_DISPLAY ? 4 : 0),
               real: true,
             };
 
             console.log(`NFS   adding right ${JSON.stringify(rightStave)}`);
             outputContours.push(rightStave);
           } else {
-            // put original stave back
             console.log(`NFS  keeping original stave`);
             outputContours.push(staveRect);
           }
@@ -366,20 +369,22 @@
                 new cv.Scalar(100, 0, 255, 255), //colour,
                 -1
               );
-              cv.rectangle(
-                src,
-                new cv.Point(rect.x, rect.y - 10),
-                new cv.Point(rect.x, rect.y + rect.height + 20),
-                new cv.Scalar(0, 255, 0, 255), //colour,
-                -1
-              );
-              cv.rectangle(
-                src,
-                new cv.Point(rect.x + rect.width, rect.y - 10),
-                new cv.Point(rect.x + rect.width, rect.y + rect.height + 20),
-                new cv.Scalar(0, 0, 0, 255), //colour,
-                -1
-              );
+              if (DEBUG_DISPLAY) {
+                cv.rectangle(
+                  src,
+                  new cv.Point(rect.x, rect.y - 10),
+                  new cv.Point(rect.x, rect.y + rect.height + 20),
+                  new cv.Scalar(0, 255, 0, 255), //colour,
+                  -1
+                );
+                cv.rectangle(
+                  src,
+                  new cv.Point(rect.x + rect.width, rect.y - 10),
+                  new cv.Point(rect.x + rect.width, rect.y + rect.height + 20),
+                  new cv.Scalar(0, 0, 0, 255), //colour,
+                  -1
+                );
+              }
             } else {
               // cv.rectangle(
               //   src,
