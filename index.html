@@ -34,7 +34,7 @@
       // SAVE OPTIONS
       // use PDF's
 
-      const DEBUG_DISPLAY = true;
+      const DEBUG_DISPLAY = false;
       let imgElement = document.getElementById("imageSrc");
       let inputElement = document.getElementById("fileInput");
       inputElement.addEventListener(
@@ -172,7 +172,7 @@
 
         let maxVal = null;
         let minVal = null;
-        while (counter < 1000) {
+        while (counter < 10000) {
           counter = counter + 1;
 
           const minMax = cv.minMaxLoc(matched);
@@ -210,7 +210,7 @@
             cv.LINE_8,
             0
           );
-          if (DEBUG_DISPLAY) {
+          if (true || DEBUG_DISPLAY) {
             cv.rectangle(
               src,
               topLeft,
@@ -225,27 +225,37 @@
 
         //Sort 'em
         sortedNotePositions = notePositions.sort((item1, item2) => {
-          return item1.y == item2.y ? item1.x - item2.x : item1.y - item2.y;
+          const first = `${item1.y}${item1.x}`;
+          const second = `${item2.y}${item2.x}`;
+          return Number(first) > Number(second);
         });
 
-        let noteNumber = 1;
-        for (pos in sortedNotePositions) {
-          cv.putText(
-            src,
-            String(noteNumber),
-            new cv.Point(pos.x, pos.y),
-            cv.FONT_ITALIC,
-            10,
-            new cv.Scalar(255, 0, 0, 255),
-            2
-          );
-          noteNumber += 1;
+        if (DEBUG_DISPLAY) {
+          let noteNumber = 1;
+          for (pos in sortedNotePositions) {
+            cv.putText(
+              src,
+              `${noteNumber}`,
+              new cv.Point(
+                sortedNotePositions[pos].x,
+                sortedNotePositions[pos].y - 5
+              ),
+              cv.FONT_ITALIC,
+              0.5,
+              new cv.Scalar(255, 0, 0, 255),
+              1
+            );
+            console.log(
+              `note ${noteNumber} x ${sortedNotePositions[pos].x} y ${sortedNotePositions[pos].y}`
+            );
+            noteNumber += 1;
+          }
         }
 
         return sortedNotePositions;
       }
       function cutoutNotesFromStaves(sortedContours, notePositions, src) {
-        const EXTRA_HEIGHT = 2;
+        const EXTRA_HEIGHT = DEBUG_DISPLAY ? 2 : 0;
         const copyOfSortedContours = [...sortedContours];
         let outputContours = [];
         console.log(`copyOfSortedContours ${copyOfSortedContours.length}`);
@@ -258,13 +268,13 @@
           );
 
           counter = counter + 1;
-          if (counter > 5) {
+          if (DEBUG_DISPLAY && counter > 5) {
             console.log(`reached counter limit so exiting`);
             break;
           }
 
           let staveLeft = staveRect.x;
-          let wasNotOverlap = false;
+          let wasNoteOverlap = false;
           let verticalShift = 0;
           for (pos in notePositions) {
             const noteRect = notePositions[pos];
@@ -281,14 +291,15 @@
 
             // Overlap?
             if (
+              noteRect.x > staveLeft &&
               noteRect.y - noteRect.height / 2 < staveRect.y &&
               noteRect.y + noteRect.height > staveRect.y
             ) {
-              wasNotOverlap = true;
+              wasNoteOverlap = true;
               console.log(`NFS   *** overlap, splitting stave into two`);
               const leftStave = {
                 x: staveLeft,
-                y: staveRect.y + verticalShift,
+                y: staveRect.y + (DEBUG_DISPLAY ? verticalShift : 0),
                 width: noteRect.x - staveLeft,
                 height: staveRect.height + EXTRA_HEIGHT,
                 real: true,
@@ -302,7 +313,7 @@
             }
           }
 
-          if (wasNotOverlap) {
+          if (wasNoteOverlap) {
             const rightStave = {
               x: staveLeft,
               y: staveRect.y,
@@ -366,7 +377,7 @@
                 src,
                 new cv.Point(rect.x, rect.y),
                 new cv.Point(rect.x + rect.width, rect.y + rect.height),
-                new cv.Scalar(100, 0, 255, 255), //colour,
+                colour,
                 -1
               );
               if (DEBUG_DISPLAY) {
@@ -386,13 +397,13 @@
                 );
               }
             } else {
-              // cv.rectangle(
-              //   src,
-              //   new cv.Point(rect.x, rect.y),
-              //   new cv.Point(rect.x + rect.width, rect.y + rect.height),
-              //   colour,
-              //   1
-              // );
+              cv.rectangle(
+                src,
+                new cv.Point(rect.x, rect.y),
+                new cv.Point(rect.x + rect.width, rect.y + rect.height),
+                colour,
+                1
+              );
             }
           }
         }
