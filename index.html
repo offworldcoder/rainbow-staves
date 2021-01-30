@@ -225,7 +225,11 @@
 
         //Sort 'em
         sortedNotePositions = notePositions.sort((item1, item2) => {
-          return item1.y < item2.y ? -1 : item1.y > item2.y ? 1 : 0;
+          return item1.y < item2.y && item1.x < item2.x
+            ? -1
+            : item1.y > item2.y && item1.x > item2.x
+            ? 1
+            : 0;
         });
 
         return sortedNotePositions;
@@ -265,10 +269,14 @@
           //   0
           // );
 
+          const EXTRA_HEIGHT = 2;
+          let staveLeft = staveRect.x;
           let wasNotOverlap = false;
           for (pos in notePositions) {
             const noteRect = notePositions[pos];
             console.log(`NFS   noteRect ${JSON.stringify(noteRect)}`);
+
+            //TODO: Sort notes into left to right
 
             if (noteRect.y > staveRect.y) {
               console.log(
@@ -284,33 +292,32 @@
             ) {
               wasNotOverlap = true;
               console.log(`NFS   *** overlap, splitting stave into two`);
-              const EXTRA_HEIGHT = 2;
               const leftStave = {
-                x: staveRect.x,
+                x: staveLeft,
                 y: staveRect.y,
-                width: noteRect.x - staveRect.x,
+                width: noteRect.x - staveLeft,
                 height: staveRect.height + EXTRA_HEIGHT,
                 real: true,
               };
-              const rightStave = {
-                x: noteRect.x + noteRect.width,
-                y: staveRect.y,
-                width:
-                  staveRect.x + staveRect.width - noteRect.x - noteRect.width,
-                height: staveRect.height + EXTRA_HEIGHT,
-                real: true,
-              };
-
-              const index = sortedContours.findIndex(
-                (item) => item.y === staveRect.y
-              );
+              staveLeft = noteRect.x + noteRect.width;
               console.log(`NFS   adding left ${JSON.stringify(leftStave)}`);
               outputContours.push(leftStave);
-              console.log(`NFS   adding right ${JSON.stringify(rightStave)}`);
-              outputContours.push(rightStave);
             }
+
+            //TODO: add the rect of the stave
           }
-          if (!wasNotOverlap) {
+          if (wasNotOverlap) {
+            const rightStave = {
+              x: staveLeft,
+              y: staveRect.y,
+              width: staveRect.x + staveRect.width - staveLeft,
+              height: staveRect.height + EXTRA_HEIGHT + 4,
+              real: true,
+            };
+
+            console.log(`NFS   adding right ${JSON.stringify(rightStave)}`);
+            outputContours.push(rightStave);
+          } else {
             // put original stave back
             console.log(`NFS  keeping original stave`);
             outputContours.push(staveRect);
@@ -382,13 +389,13 @@
                 -1
               );
             } else {
-              cv.rectangle(
-                src,
-                new cv.Point(rect.x, rect.y),
-                new cv.Point(rect.x + rect.width, rect.y + rect.height),
-                colour,
-                1
-              );
+              // cv.rectangle(
+              //   src,
+              //   new cv.Point(rect.x, rect.y),
+              //   new cv.Point(rect.x + rect.width, rect.y + rect.height),
+              //   colour,
+              //   1
+              // );
             }
           }
         }
