@@ -225,11 +225,7 @@
 
         //Sort 'em
         sortedNotePositions = notePositions.sort((item1, item2) => {
-          return item1.y < item2.y && item1.x < item2.x
-            ? -1
-            : item1.y > item2.y && item1.x > item2.x
-            ? 1
-            : 0;
+          return item1.y == item2.y ? item1.x - item2.x : item1.y - item2.y;
         });
 
         return sortedNotePositions;
@@ -239,10 +235,6 @@
         let outputContours = [];
         console.log(`copyOfSortedContours ${copyOfSortedContours.length}`);
 
-        //TODO: loop through stave list and find all the notes on that stave rather than looping through the notes->staves
-        //TODO: would make thing cleared as to whats happening
-        //TOOD: Put everything into clean methods
-
         let counter = 0;
         for (i in copyOfSortedContours) {
           const staveRect = copyOfSortedContours[i];
@@ -251,7 +243,7 @@
           );
 
           counter = counter + 1;
-          if (counter > 5) {
+          if (counter > 100) {
             console.log(`reached counter limit so exiting`);
             break;
           }
