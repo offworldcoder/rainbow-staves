@@ -20,6 +20,9 @@
       </div>
       <div class="inputoutput" id="inputoutput" style="display: none">
         <img id="wholenote" src="./wholenote.png" style="display: none" />
+        <img id="wholenote2" src="./wholenote-2.png" style="display: none" />
+        <img id="wholenote3" src="./wholenote-3.png" style="display: none" />
+        <img id="wholenote4" src="./wholenote-4.png" style="display: none" />
         <canvas id="canvasOutput"></canvas>
         <img id="imageSrc" alt="" />
         <div class="caption">
@@ -65,17 +68,27 @@
         return sortableContours;
       }
 
+      function loadNoteImage(filename, imageList) {
+        //TODO: loop through note images in directory
+        const wholeNote = cv.imread(filename, 0);
+        wholeNote2 = new cv.Mat();
+        cv.cvtColor(wholeNote, wholeNote2, cv.COLOR_BGR2GRAY, 0);
+        imageList.push(wholeNote2);
+      }
+
       imgElement.onload = function () {
-        let wholeNote = cv.imread("wholenote", 0);
         let src = cv.imread(imgElement);
 
         // Preprocess Convert everything to grayscale
         gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
 
-        wholeNote2 = new cv.Mat();
-        cv.cvtColor(wholeNote, wholeNote2, cv.COLOR_BGR2GRAY, 0);
-
+        wholeNotes = [];
+        loadNoteImage("wholenote", wholeNotes);
+        loadNoteImage("wholenote2", wholeNotes);
+        loadNoteImage("wholenote3", wholeNotes);
+        loadNoteImage("wholenote4", wholeNotes);
+        console.log(`wholeNotes ${wholeNotes.length}`);
         thresh = new cv.Mat();
         cv.threshold(
           gray,
@@ -86,7 +99,7 @@
         )[1];
 
         const { maxLength, sortedContours } = findTheStaves(thresh);
-        const notePositions = findTheNotes(gray, src);
+        const notePositions = findTheNotes(gray, src, wholeNotes);
         const newContours = cutoutNotesFromStaves(
           sortedContours,
           notePositions,
@@ -96,8 +109,7 @@
         cv.imshow("canvasOutput", src);
 
         // Clean up
-        wholeNote2.delete();
-        wholeNote.delete();
+        wholeNotes.delete();
         src.delete();
         gray.delete();
         thresh.delete();
@@ -160,66 +172,74 @@
         return { maxLength, sortedContours };
       }
 
-      function findTheNotes(gray, src) {
+      function findTheNotes(gray, src, wholeNotes) {
         let mask = new cv.Mat();
         let threshold = 0.5;
         max_val = 1;
         counter = 0;
         let notePositions = [];
 
-        let matched = new cv.Mat();
-        cv.matchTemplate(gray, wholeNote2, matched, cv.TM_CCOEFF_NORMED);
-
-        let maxVal = null;
-        let minVal = null;
-        while (counter < 10000) {
-          counter = counter + 1;
-
-          const minMax = cv.minMaxLoc(matched);
-          const x = minMax.maxLoc.x;
-          const y = minMax.maxLoc.y;
-
-          if (maxVal === null) {
-            maxVal = minMax.maxVal;
-          }
-          const value = minMax.maxVal;
-          if (value < maxVal * 0.9) {
-            break;
-          }
-
-          notePositions.push({
-            x: x,
-            y: y,
-            width: wholeNote2.cols,
-            height: wholeNote2.rows,
-          });
-
-          const topLeft = new cv.Point(x, y);
-          const bottomRight = new cv.Point(
-            x + wholeNote2.cols,
-            y + wholeNote2.rows
-          );
-
-          let rect = new cv.Rect(x, y, x + 50, y + 50);
-          cv.rectangle(
+        for (note in wholeNotes) {
+          console.log(`wholnotes...`);
+          let matched = new cv.Mat();
+          cv.matchTemplate(
+            gray,
+            wholeNotes[note],
             matched,
-            topLeft,
-            bottomRight,
-            new cv.Scalar(0, 0, 0, 255),
-            cv.FILLED,
-            cv.LINE_8,
-            0
+            cv.TM_CCOEFF_NORMED
           );
-          if (true || DEBUG_DISPLAY) {
+
+          let maxVal = null;
+          let minVal = null;
+          while (counter < 10000) {
+            counter = counter + 1;
+
+            const minMax = cv.minMaxLoc(matched);
+            const x = minMax.maxLoc.x;
+            const y = minMax.maxLoc.y;
+
+            if (maxVal === null) {
+              maxVal = minMax.maxVal;
+            }
+            const value = minMax.maxVal;
+            if (value < maxVal * 0.9) {
+              break;
+            }
+
+            notePositions.push({
+              x: x,
+              y: y,
+              width: wholeNote2.cols,
+              height: wholeNote2.rows,
+            });
+
+            const topLeft = new cv.Point(x, y);
+            const bottomRight = new cv.Point(
+              x + wholeNote2.cols,
+              y + wholeNote2.rows
+            );
+
+            let rect = new cv.Rect(x, y, x + 50, y + 50);
             cv.rectangle(
-              src,
+              matched,
               topLeft,
               bottomRight,
-              new cv.Scalar(255, 0, 0, 255),
-              2,
+              new cv.Scalar(0, 0, 0, 255),
+              cv.FILLED,
               cv.LINE_8,
               0
             );
+            if (true || DEBUG_DISPLAY) {
+              cv.rectangle(
+                src,
+                topLeft,
+                bottomRight,
+                new cv.Scalar(255, 0, 0, 255),
+                2,
+                cv.LINE_8,
+                0
+              );
+            }
           }
         }
 
@@ -289,9 +309,9 @@
               break;
             }
 
-            // Overlap?
+            // Does this note overlap with the stave line?
             if (
-              noteRect.x > staveLeft &&
+              noteRect.x > staveLeft && //TODO: shouldn't need to do this to catch rogue overlapping note
               noteRect.y - noteRect.height / 2 < staveRect.y &&
               noteRect.y + noteRect.height > staveRect.y
             ) {
