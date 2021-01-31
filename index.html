@@ -36,6 +36,8 @@
       // SAVE OPTIONS
       // use PDF's
 
+      const DEBUG_STAVE_TEXT = true;
+      const DEBUG_NOTE_TEXT = false;
       const DEBUG_DISPLAY = false;
       let imgElement = document.getElementById("imageSrc");
       let inputElement = document.getElementById("fileInput");
@@ -193,7 +195,7 @@
 
           let maxVal = null;
           let minVal = null;
-          while (counter < (DEBUG_DISPLAY ? 5 : 10000)) {
+          while (counter < (DEBUG_DISPLAY ? 1000 : 10000)) {
             counter = counter + 1;
 
             const minMax = cv.minMaxLoc(matched);
@@ -244,6 +246,18 @@
                 cv.LINE_8,
                 0
               );
+
+              if (DEBUG_NOTE_TEXT) {
+                cv.putText(
+                  src,
+                  `${y}`,
+                  new cv.Point(x, y - 5),
+                  cv.FONT_ITALIC,
+                  0.5,
+                  new cv.Scalar(255, 0, 0, 255),
+                  1
+                );
+              }
             }
           }
         }
@@ -257,7 +271,7 @@
           return Number(first) > Number(second);
         });
 
-        if (DEBUG_DISPLAY) {
+        if (DEBUG_NOTE_TEXT) {
           let noteNumber = 1;
           for (pos in sortedNotePositions) {
             cv.putText(
@@ -291,7 +305,7 @@
         for (i in copyOfSortedContours) {
           const staveRect = copyOfSortedContours[i];
           console.log(
-            `NFS [${counter}] staveRect ${JSON.stringify(staveRect)}`
+            `NFS [${counter}] staveRect [${i}] ${JSON.stringify(staveRect)}`
           );
 
           counter = counter + 1;
@@ -305,7 +319,7 @@
           let verticalShift = 0;
           for (pos in notePositions) {
             const noteRect = notePositions[pos];
-            if (noteRect.y < staveRect.y) {
+            if (noteRect.y + noteRect.height < staveRect.y) {
               console.log(`skipping...`);
               continue;
             }
@@ -325,7 +339,7 @@
 
             // Does this note overlap with the stave line?
             if (
-              noteRect.x > staveLeft && //TODO: shouldn't need to do this to catch rogue overlapping note
+              // noteRect.x > staveLeft && //TODO: shouldn't need to do this to catch rogue overlapping note
               noteRect.y - noteRect.height / 2 < staveRect.y &&
               noteRect.y + noteRect.height > staveRect.y
             ) {
@@ -388,6 +402,10 @@
         for (i in sortedContours) {
           const rect = sortedContours[i];
           console.log(`=> stave x ${rect.x} y ${rect.y} real ${rect.real}`);
+          // if (Number(i) < 32 || Number(i) > 34) {
+          //   console.log(`only interested in stave`);
+          //   continue;
+          // }
 
           // Only draw real (manually added) horizontal lines or those which are long enough to be considered part of the stave
           if (rect.real || rect.width > maxLength / 2) {
@@ -406,6 +424,18 @@
               console.log(`keeping colour`);
             }
 
+            if (DEBUG_STAVE_TEXT) {
+              cv.putText(
+                src,
+                `stave ${i}`,
+                new cv.Point(rect.x, rect.y),
+                cv.FONT_ITALIC,
+                0.5,
+                new cv.Scalar(255, 0, 0, 255),
+                1
+              );
+            }
+
             if (rect.real) {
               cv.rectangle(
                 src,
@@ -414,7 +444,7 @@
                 colour,
                 -1
               );
-              if (DEBUG_DISPLAY) {
+              if (true || DEBUG_STAVE_DISPLAY) {
                 cv.rectangle(
                   src,
                   new cv.Point(rect.x, rect.y - 10),
