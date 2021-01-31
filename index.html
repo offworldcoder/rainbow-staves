@@ -33,7 +33,6 @@
     </div>
     <script type="text/javascript">
       //TODO:
-      // DRAW OVER NOTES to place them on top of the staves unless there's a better approach
       // SAVE OPTIONS
       // use PDF's
 
@@ -69,7 +68,6 @@
       }
 
       function loadNoteImage(filename, imageList) {
-        //TODO: loop through note images in directory
         const wholeNote = cv.imread(filename, 0);
         wholeNote2 = new cv.Mat();
         cv.cvtColor(wholeNote, wholeNote2, cv.COLOR_BGR2GRAY, 0);
@@ -83,6 +81,7 @@
         gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_BGR2GRAY, 0);
 
+        //TODO: loop through note images in directory
         wholeNotes = [];
         loadNoteImage("wholenote", wholeNotes);
         loadNoteImage("wholenote2", wholeNotes);
@@ -99,6 +98,8 @@
         )[1];
 
         const { maxLength, sortedContours } = findTheStaves(thresh);
+        console.log(`Number of stave lines found ${sortedContours.length}`);
+
         const notePositions = findTheNotes(gray, src, wholeNotes);
         const newContours = cutoutNotesFromStaves(
           sortedContours,
@@ -109,19 +110,20 @@
         cv.imshow("canvasOutput", src);
 
         // Clean up
-        wholeNotes.delete();
+        wholeNotes = [];
         src.delete();
         gray.delete();
         thresh.delete();
       };
+
       function onOpenCvReady() {
         document.getElementById("loading").style.display = "none";
         document.getElementById("inputoutput").style.display = "block";
         document.getElementById("status").innerHTML =
           'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer.';
       }
+
       function findTheStaves(thresh) {
-        // Find Staves
         let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
         let anchor = new cv.Point(-1, -1);
 
@@ -191,7 +193,7 @@
 
           let maxVal = null;
           let minVal = null;
-          while (counter < 10000) {
+          while (counter < (DEBUG_DISPLAY ? 5 : 10000)) {
             counter = counter + 1;
 
             const minMax = cv.minMaxLoc(matched);
@@ -203,6 +205,9 @@
             }
             const value = minMax.maxVal;
             if (value < maxVal * 0.9) {
+              console.log(
+                `Match value is velow threshold so stopping ${value}`
+              );
               break;
             }
 
@@ -242,6 +247,8 @@
             }
           }
         }
+
+        console.log(`Number of notes found on sheet ${notePositions.length}`);
 
         //Sort 'em
         sortedNotePositions = notePositions.sort((item1, item2) => {
@@ -298,8 +305,15 @@
           let verticalShift = 0;
           for (pos in notePositions) {
             const noteRect = notePositions[pos];
+            if (noteRect.y < staveRect.y) {
+              console.log(`skipping...`);
+              continue;
+            }
+
             console.log(
-              `NFS  staveLeft ${staveLeft} noteRect ${JSON.stringify(noteRect)}`
+              `NFS  staveLeft ${staveLeft} noteRect [${pos}] ${JSON.stringify(
+                noteRect
+              )}`
             );
 
             if (noteRect.y > staveRect.y) {
