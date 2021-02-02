@@ -38,7 +38,6 @@
 
       const DEBUG_STAVE_TEXT = false;
       const DEBUG_NOTE_TEXT = false;
-      const DEBUG_DISPLAY = false;
       let imgElement = document.getElementById("imageSrc");
       let inputElement = document.getElementById("fileInput");
       inputElement.addEventListener(
@@ -49,25 +48,6 @@
         false
       );
 
-      function sortContours(contours) {
-        let sortableContours = [];
-        for (let i = 0; i < contours.size(); i++) {
-          const rect = cv.boundingRect(contours.get(i));
-          sortableContours.push({
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-          });
-        }
-
-        //Sort 'em
-        sortableContours = sortableContours.sort((item1, item2) => {
-          return item1.y < item2.y ? -1 : item1.y > item2.y ? 1 : 0;
-        });
-
-        return sortableContours;
-      }
 
       function loadNoteImage(filename, imageList) {
         const wholeNote = cv.imread(filename, 0);

@@ -1,3 +1,25 @@
+const DEBUG_DISPLAY = false;
+
+function sortContours(contours) {
+  let sortableContours = [];
+  for (let i = 0; i < contours.size(); i++) {
+    const rect = cv.boundingRect(contours.get(i));
+    sortableContours.push({
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    });
+  }
+
+  //Sort 'em
+  sortableContours = sortableContours.sort((item1, item2) => {
+    return item1.y < item2.y ? -1 : item1.y > item2.y ? 1 : 0;
+  });
+
+  return sortableContours;
+}
+
 function findTheStaves(thresh) {
     let horizontal_kernel = cv.Mat.ones(1, 40, cv.CV_8U);
     let anchor = new cv.Point(-1, -1);
@@ -23,6 +45,14 @@ function findTheStaves(thresh) {
       cv.CHAIN_APPROX_SIMPLE
     );
 
+
+    hierarchy.delete();
+    // contours.delete();
+
+    return doTheSorting(contours)
+  }
+
+  function doTheSorting(contours) {
     const sortedContours = sortContours(contours);
 
     // work out how long the staves are (mostly)
@@ -37,9 +67,6 @@ function findTheStaves(thresh) {
       minLength = Math.min(minLength, rect.width);
       total = total + rect.width;
     }
-
-    hierarchy.delete();
-    contours.delete();
 
     console.log(`sortedContours.length ${counter}`);
     const averageWidth = total / counter;
@@ -252,4 +279,8 @@ function findTheStaves(thresh) {
       }
     }
     return outputContours;
+  }
+
+  if (module !== undefined) {
+    module.exports = { cutoutNotesFromStaves }
   }
