@@ -62,12 +62,19 @@ function findTheStaves(thresh) {
     let minLength = 9999;
     let total = 0;
     let counter = 0;
+    let previousStave = {y:0}
     for (i in sortedContours) {
       counter += 1;
       const rect = sortedContours[i];
       maxLength = Math.max(maxLength, rect.width);
       minLength = Math.min(minLength, rect.width);
       total = total + rect.width;
+
+      if (Math.abs(rect.y - previousStave.y) < 5)
+      {
+        console.log(`This stave [${i}] x ${rect.x} y ${rect.y} is too close to previous x ${previousStave.x} y ${previousStave.y}`)
+      }
+      previousStave = rect;
     }
 
     console.log(`sortedContours.length ${counter}`);
@@ -200,15 +207,14 @@ function findTheStaves(thresh) {
 
   function cutoutNotesFromStaves(sortedContours, notePositions, src) {
     const EXTRA_HEIGHT = DEBUG_DISPLAY ? 2 : 0;
-    const copyOfSortedContours = [...sortedContours];
     let outputContours = [];
-    console.log(`copyOfSortedContours ${copyOfSortedContours.length}`);
+    console.log(`sortedContours length ${sortedContours.length}`);
 
     let counter = 0;
-    for (i in copyOfSortedContours) {
-      const staveRect = copyOfSortedContours[i];
+    for (i in sortedContours) {
+      const staveRect = sortedContours[i];
       console.log(
-        `NFS [${counter}] staveRect [${i}] ${JSON.stringify(staveRect)}`
+        `NFS staveRect [${i}] ${JSON.stringify(staveRect)}`
       );
 
       counter = counter + 1;

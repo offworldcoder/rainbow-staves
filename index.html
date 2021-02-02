@@ -19,10 +19,36 @@
         <h1>Loading...</h1>
       </div>
       <div class="inputoutput" id="inputoutput" style="display: none">
-        <img id="wholenote" src="./wholenote.png" style="display: none" />
-        <img id="wholenote2" src="./wholenote-2.png" style="display: none" />
-        <img id="wholenote3" src="./wholenote-3.png" style="display: none" />
-        <img id="wholenote4" src="./wholenote-4.png" style="display: none" />
+        <img
+          id="wholenote-1"
+          src="./note-images/wholenote-1.png"
+          style="display: none"
+        />
+        <img
+          id="wholenote-2"
+          src="./note-images/wholenote-2.png"
+          style="display: none"
+        />
+        <img
+          id="wholenote-3"
+          src="./note-images/wholenote-3.png"
+          style="display: none"
+        />
+        <img
+          id="wholenote-4"
+          src="./note-images/wholenote-4.png"
+          style="display: none"
+        />
+        <img
+          id="google-wholenote-1"
+          src="./note-images/google-wholenote-1.png"
+          style="display: none"
+        />
+        <img
+          id="google-wholenote-2"
+          src="./note-images/google-wholenote-2.png"
+          style="display: none"
+        />
         <canvas id="canvasOutput"></canvas>
         <img id="imageSrc" alt="" />
         <div class="caption">
@@ -48,7 +74,6 @@
         false
       );
 
-
       function loadNoteImage(filename, imageList) {
         const wholeNote = cv.imread(filename, 0);
         wholeNote2 = new cv.Mat();
@@ -65,10 +90,12 @@
 
         //TODO: loop through note images in directory
         wholeNotes = [];
-        loadNoteImage("wholenote", wholeNotes);
-        loadNoteImage("wholenote2", wholeNotes);
-        loadNoteImage("wholenote3", wholeNotes);
-        loadNoteImage("wholenote4", wholeNotes);
+        loadNoteImage("wholenote-1", wholeNotes);
+        loadNoteImage("wholenote-2", wholeNotes);
+        loadNoteImage("wholenote-3", wholeNotes);
+        loadNoteImage("wholenote-4", wholeNotes);
+        loadNoteImage("google-wholenote-1", wholeNotes);
+        loadNoteImage("google-wholenote-2", wholeNotes);
         console.log(`wholeNotes ${wholeNotes.length}`);
         thresh = new cv.Mat();
         cv.threshold(
