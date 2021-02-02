@@ -47,9 +47,11 @@ function findTheStaves(thresh) {
 
 
     hierarchy.delete();
-    // contours.delete();
 
-    return doTheSorting(contours)
+    const sortedContours = doTheSorting(contours)
+    contours.delete();
+
+    return sortedContours
   }
 
   function doTheSorting(contours) {
