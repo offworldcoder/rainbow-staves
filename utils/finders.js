@@ -93,7 +93,7 @@ function findTheStaves(thresh) {
     let notePositions = [];
 
     for (note in wholeNotes) {
-      console.log(`wholnotes...`);
+      console.log(`Looking for wholenotes [${note}]...`);
       let matched = new cv.Mat();
       cv.matchTemplate(
         gray,
@@ -117,7 +117,7 @@ function findTheStaves(thresh) {
         const value = minMax.maxVal;
         if (value < maxVal * 0.9) {
           console.log(
-            `Match value is velow threshold so stopping ${value}`
+            `Match value is below threshold so stopping ${value}`
           );
           break;
         }
@@ -129,13 +129,12 @@ function findTheStaves(thresh) {
           height: wholeNote2.rows,
         });
 
-        const topLeft = new cv.Point(x, y);
+        const topLeft = new cv.Point(x - 5, y - 5);
         const bottomRight = new cv.Point(
-          x + wholeNote2.cols,
-          y + wholeNote2.rows
+          x + wholeNote2.cols + 10,
+          y + wholeNote2.rows + 10
         );
 
-        let rect = new cv.Rect(x, y, x + 50, y + 50);
         cv.rectangle(
           matched,
           topLeft,
@@ -145,6 +144,8 @@ function findTheStaves(thresh) {
           cv.LINE_8,
           0
         );
+        // cv.imshow("debugOutput", matched);
+
         if (true || DEBUG_DISPLAY) {
           cv.rectangle(
             src,
@@ -180,7 +181,7 @@ function findTheStaves(thresh) {
       return Number(first) > Number(second);
     });
 
-    if (DEBUG_NOTE_TEXT) {
+    if (true || DEBUG_NOTE_TEXT) {
       let noteNumber = 1;
       for (pos in sortedNotePositions) {
         cv.putText(
@@ -214,14 +215,14 @@ function findTheStaves(thresh) {
     for (i in sortedContours) {
       const staveRect = sortedContours[i];
       console.log(
-        `NFS staveRect [${i}] ${JSON.stringify(staveRect)}`
+        `NFS ------ [${i}] ${JSON.stringify(staveRect)}`
       );
 
       counter = counter + 1;
-      if (DEBUG_DISPLAY && counter > 5) {
-        console.log(`reached counter limit so exiting`);
-        break;
-      }
+      // if (DEBUG_DISPLAY && counter > 5) {
+      //   console.log(`reached counter limit so exiting`);
+      //   break;
+      // }
 
       let staveLeft = staveRect.x;
       let wasNoteOverlap = false;
@@ -234,14 +235,14 @@ function findTheStaves(thresh) {
         }
 
         console.log(
-          `NFS  staveLeft ${staveLeft} noteRect [${pos}] ${JSON.stringify(
+          `NFS -----| ${staveLeft} noteRect [${pos}] ${JSON.stringify(
             noteRect
           )}`
         );
 
         if (noteRect.y > staveRect.y) {
           console.log(
-            `NFS   note is below this stave, moving to next stave`
+            `NFS   note O is below this stave, moving to next stave`
           );
           break;
         }
@@ -263,7 +264,7 @@ function findTheStaves(thresh) {
           };
           staveLeft = noteRect.x + noteRect.width;
           console.log(
-            `NFS   adding left stave section ${JSON.stringify(leftStave)}`
+            `NFS  -----| adding left stave section ${JSON.stringify(leftStave)}`
           );
           outputContours.push(leftStave);
           verticalShift += 2;
@@ -279,16 +280,16 @@ function findTheStaves(thresh) {
           real: true,
         };
 
-        console.log(`NFS   adding right ${JSON.stringify(rightStave)}`);
+        console.log(`NFS |----- adding right ${JSON.stringify(rightStave)}`);
         outputContours.push(rightStave);
       } else {
-        console.log(`NFS  keeping original stave`);
+        console.log(`NFS ------ keeping original stave`);
         outputContours.push(staveRect);
       }
     }
     return outputContours;
   }
 
-  if (module !== undefined) {
+  if (typeof module !== 'undefined') {
     module.exports = { cutoutNotesFromStaves }
   }

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+      <!-- 
+        TODO:
+          SAVE OPTIONS
+          use PDF's
+        -->
+
 <html>
   <head>
     <style>
@@ -64,6 +70,11 @@
         </tr>
         <tr>
           <td>
+            <canvas id="debugOutput"></canvas>
+          </td>
+        </tr>
+        <tr>
+          <td>
             <canvas id="canvasOutput"></canvas>
           </td>
         </tr>
@@ -76,10 +87,6 @@
       </tr>
     </table>
     <script type="text/javascript">
-      //TODO:
-      // SAVE OPTIONS
-      // use PDF's
-
       const DEBUG_STAVE_TEXT = false;
       const DEBUG_NOTE_TEXT = false;
       let imgElement = document.getElementById("imageSrc");
@@ -110,11 +117,11 @@
         //TODO: loop through note images in directory
         wholeNotes = [];
         loadNoteImage("wholenote-1", wholeNotes);
-        loadNoteImage("wholenote-2", wholeNotes);
-        loadNoteImage("wholenote-3", wholeNotes);
-        loadNoteImage("wholenote-4", wholeNotes);
-        loadNoteImage("google-wholenote-1", wholeNotes);
-        loadNoteImage("google-wholenote-2", wholeNotes);
+        // loadNoteImage("wholenote-2", wholeNotes);
+        // loadNoteImage("wholenote-3", wholeNotes);
+        // loadNoteImage("wholenote-4", wholeNotes);
+        // loadNoteImage("google-wholenote-1", wholeNotes);
+        // loadNoteImage("google-wholenote-2", wholeNotes);
         console.log(`wholeNotes ${wholeNotes.length}`);
         thresh = new cv.Mat();
         cv.threshold(
