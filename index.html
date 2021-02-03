@@ -41,7 +41,7 @@
 </head>
 
   <body>
-    <table width="100%" height="300px" border="1">
+    <table width="100%" height="300px" border="0">
       <tr>
         <td align="center">
           <img src="./images/title.png" width="400" />
@@ -54,18 +54,27 @@
         <tr>
           <td style="padding:0px 150px 0px 150px" id="status" height="100px"></td>
         </tr>
+        <tr>
+          <td style="padding-left: 150px" class="inputoutput" id="inputoutput" style="display: none">
+            <div id="caption" class="caption">
+              Sheet Music file to Colourize ->
+              <input type="file" id="fileInput" name="file" />
+            </div>    
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <canvas id="canvasOutput"></canvas>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <h3>Original image:</h3><br/>
+            <img id="imageSrc" alt="" />
+          </td>
+        </tr>
       </tr>
     </table>
-    <div>
-      <div class="inputoutput" id="inputoutput" style="display: none">
-        <canvas id="canvasOutput"></canvas>
-        <img id="imageSrc" alt="" />
-        <div class="caption">
-          Sheet Music file to Colourize ->
-          <input type="file" id="fileInput" name="file" />
-        </div>
-      </div>
-    </div>
     <script type="text/javascript">
       //TODO:
       // SAVE OPTIONS
@@ -79,6 +88,7 @@
         "change",
         (e) => {
           imgElement.src = URL.createObjectURL(e.target.files[0]);
+          document.getElementById("caption").style.display = "none";
         },
         false
       );
