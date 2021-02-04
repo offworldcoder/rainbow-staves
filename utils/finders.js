@@ -103,7 +103,6 @@ function findTheStaves(thresh) {
       );
 
       let maxVal = null;
-      let minVal = null;
       while (counter < (DEBUG_DISPLAY ? 1000 : 10000)) {
         counter = counter + 1;
 
@@ -144,9 +143,17 @@ function findTheStaves(thresh) {
           cv.LINE_8,
           0
         );
-        // cv.imshow("debugOutput", matched);
+        cv.rectangle(
+          gray,
+          topLeft,
+          bottomRight,
+          new cv.Scalar(0, 0, 0, 255),
+          cv.FILLED,
+          cv.LINE_8,
+          0
+        );
 
-        if (true || DEBUG_DISPLAY) {
+        if (DEBUG_DISPLAY) {
           cv.rectangle(
             src,
             topLeft,
@@ -169,6 +176,8 @@ function findTheStaves(thresh) {
             );
           }
         }
+        // cv.imshow("debugOutput", gray);
+        // console.log(`debug output`)
       }
     }
 
@@ -178,15 +187,14 @@ function findTheStaves(thresh) {
     sortedNotePositions = notePositions.sort((item1, item2) => {
       const first = `${item1.y}${item1.x}`;
       const second = `${item2.y}${item2.x}`;
-      return Number(first) > Number(second);
+      return Number(first) - Number(second);
     });
 
-    if (true || DEBUG_NOTE_TEXT) {
-      let noteNumber = 1;
+    if (DEBUG_NOTE_TEXT) {
       for (pos in sortedNotePositions) {
         cv.putText(
           src,
-          `${noteNumber}`,
+          `${pos}`,
           new cv.Point(
             sortedNotePositions[pos].x,
             sortedNotePositions[pos].y - 5
@@ -197,9 +205,8 @@ function findTheStaves(thresh) {
           1
         );
         console.log(
-          `note ${noteNumber} x ${sortedNotePositions[pos].x} y ${sortedNotePositions[pos].y}`
+          `note ${pos} x ${sortedNotePositions[pos].x} y ${sortedNotePositions[pos].y}`
         );
-        noteNumber += 1;
       }
     }
 
@@ -240,12 +247,13 @@ function findTheStaves(thresh) {
           )}`
         );
 
-        if (noteRect.y > staveRect.y) {
-          console.log(
-            `NFS   note O is below this stave, moving to next stave`
-          );
-          break;
-        }
+        //TODO: This shortcut doesn't work as the notes are numeric order(?)
+        // if (noteRect.y > staveRect.y) {
+        //   console.log(
+        //     `NFS   note [${pos}] is below this stave [${i}], moving to next stave`
+        //   );
+        //   break;
+        // }
 
         // Does this note overlap with the stave line?
         if (

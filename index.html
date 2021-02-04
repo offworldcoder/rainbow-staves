@@ -144,6 +144,8 @@
         drawStaves(newContours, src, maxLength);
         cv.imshow("canvasOutput", src);
 
+        // writeFileSync('output.jpg', canvas.toBuffer('image/jpeg'));
+
         // Clean up
         wholeNotes = [];
         src.delete();

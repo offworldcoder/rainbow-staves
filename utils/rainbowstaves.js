@@ -1,3 +1,5 @@
+const DEBUG_STAVE_DISPLAY = false;
+
 function drawStaves(sortedContours, src, maxLength) {
     // draw contours
     const colours = [
@@ -20,10 +22,6 @@ function drawStaves(sortedContours, src, maxLength) {
     for (i in sortedContours) {
       const rect = sortedContours[i];
       console.log(`=> stave x ${rect.x} y ${rect.y} real ${rect.real}`);
-      // if (Number(i) < 32 || Number(i) > 34) {
-      //   console.log(`only interested in stave`);
-      //   continue;
-      // }
 
       // Only draw real (manually added) horizontal lines or those which are long enough to be considered part of the stave
       if (rect.real || rect.width > maxLength / 2) {
@@ -62,19 +60,19 @@ function drawStaves(sortedContours, src, maxLength) {
             colour,
             -1
           );
-          if (true || DEBUG_STAVE_DISPLAY) {
+          if (DEBUG_STAVE_DISPLAY) {
             cv.rectangle(
               src,
               new cv.Point(rect.x, rect.y - 10),
               new cv.Point(rect.x, rect.y + rect.height + 20),
-              new cv.Scalar(0, 255, 0, 255), //colour,
+              new cv.Scalar(0, 255, 0, 255),
               -1
             );
             cv.rectangle(
               src,
               new cv.Point(rect.x + rect.width, rect.y - 10),
               new cv.Point(rect.x + rect.width, rect.y + rect.height + 20),
-              new cv.Scalar(0, 0, 0, 255), //colour,
+              new cv.Scalar(0, 0, 0, 255),
               -1
             );
           }
