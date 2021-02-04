@@ -91,11 +91,11 @@
       const DEBUG_NOTE_TEXT = false;
       let imgElement = document.getElementById("imageSrc");
       let inputElement = document.getElementById("fileInput");
+      document.getElementById("caption").style.display = "none";
       inputElement.addEventListener(
         "change",
         (e) => {
           imgElement.src = URL.createObjectURL(e.target.files[0]);
-          document.getElementById("caption").style.display = "none";
         },
         false
       );
@@ -155,6 +155,7 @@
 
       function onOpenCvReady() {
         document.getElementById("loading").style.display = "none";
+        document.getElementById("caption").style.display = "block";
         document.getElementById("inputoutput").style.display = "block";
         document.getElementById("status").innerHTML =
           'Rainbow Stave is ready. Please click on the "Choose file" button to select your sheet music file on your computer. Currently this should be an image file, eg. .jpg or .png<br/><br/>The sheet music is processed on your computer and NOT uploaded to any server.';
