@@ -6,7 +6,7 @@ Alissa to describe what this webpage is doing to the sheet music and why. We are
 Rainbow Staves is currently available for use at it's current temporary location - https://offworldcoder.github.io/rainbow-staves/ (previously http://rainbowstaves.infinityfreeapp.com/dist/)
 
 ## How it works
-We use the opencv.js library to find the stave positions in the sheet music image. At this point we could draw coloured lines over the staves but this will also draw the line ontop of the notes which makes the music less readable. To improve readability we find the quarter notes and try to draw the coloured stave lines around them.
+All processing is done in the browser. No files are uploaded to any servers. We use the opencv.js library to find the stave positions in the sheet music image. At this point we could draw coloured lines over the staves but this will also draw the line ontop of the notes which makes the music less readable. To improve readability we find the quarter notes and try to draw the coloured stave lines around them.
 
 ![alt text](sheetmusic/readme%20example.jpg)
 
