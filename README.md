@@ -1,7 +1,7 @@
 # Getting Started with Rainbow-Staves
 
 ## Overview
-Alissa to describe what this webpage is doing to the sheet music and why. We are adding colours to the stave lines to make them more readable to people with dyslexia.
+We are adding colours to the stave lines to make them more readable to people with dyslexia. (Alissa to expand on this description about what this webpage is doing to the sheet music and why)
 
 Rainbow Staves is currently available for use at it's current temporary location - https://offworldcoder.github.io/rainbow-staves/ (previously http://rainbowstaves.infinityfreeapp.com/dist/)
 
