@@ -1,0 +1,6 @@
+rm -fR ./dist
+mkdir dist
+cp -r images dist
+cp index.html dist/index2.html
+cp -R note-images dist
+cp -R utils dist
