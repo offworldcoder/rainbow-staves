@@ -10,8 +10,9 @@ All processing is done in the browser. No files are uploaded to any servers. We 
 
 Here we show the original sheet music image at the top. Below that is the same image after we add our coloured stave lines.
 
-![alt text](sheetmusic/readme%20example.jpg)
+Example created using googles https://flat.io/
 
+![alt text](sheetmusic/readme%20example.jpg)
 
 ### External Resources
 Javascript OpenCV examples: https://docs.opencv.org/3.4/dc/de6/tutorial_js_nodejs.html
