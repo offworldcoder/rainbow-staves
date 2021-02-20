@@ -1,9 +1,9 @@
 # Getting Started with Rainbow-Staves
 
 ## Overview
-We are adding colours to the stave lines to make them more readable to people with dyslexia. (Alissa to expand on this description about what this webpage is doing to the sheet music and why)
+We are adding coloured stave lines to an existing sheet music image. This makes the sheet music more readable to people with dyslexia. (Alissa to expand on this description about what this webpage is doing to the sheet music and why)
 
-Rainbow Staves is currently available for use at it's current temporary location - https://offworldcoder.github.io/rainbow-staves/ (previously http://rainbowstaves.infinityfreeapp.com/dist/)
+Rainbow Staves is currently available for use at it's current temporary location - https://offworldcoder.github.io/rainbow-staves
 
 ## How it works
 All processing is done in the browser. No files are uploaded to any servers. We use the opencv.js library to find the stave positions in the sheet music image. At this point we could draw coloured lines over the staves but this will also draw the line ontop of the notes which makes the music less readable. To improve readability we find the quarter notes and try to draw the coloured stave lines around them.
