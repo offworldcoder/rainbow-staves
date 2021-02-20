@@ -8,6 +8,8 @@ Rainbow Staves is currently available for use at it's current temporary location
 ## How it works
 All processing is done in the browser. No files are uploaded to any servers. We use the opencv.js library to find the stave positions in the sheet music image. At this point we could draw coloured lines over the staves but this will also draw the line ontop of the notes which makes the music less readable. To improve readability we find the quarter notes and try to draw the coloured stave lines around them.
 
+Here we show the original sheet music image at the top. Below that is the same image after we add our coloured stave lines.
+
 ![alt text](sheetmusic/readme%20example.jpg)
 
 
