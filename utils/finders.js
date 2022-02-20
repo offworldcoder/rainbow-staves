@@ -1,5 +1,13 @@
 const DEBUG_DISPLAY = false;
 
+/**
+ * Sort the stave line contour output from opencv into vertical order.
+ * We've already split the lines around the notes we found so the order of the
+ * stave line in our list is all over the place.
+ * 
+ * @param {*} contours - contours output from opencv
+ * @returns 
+ */
 function sortContours(contours) {
   let sortableContours = [];
   for (let i = 0; i < contours.size(); i++) {
@@ -213,6 +221,14 @@ function findTheStaves(thresh) {
     return sortedNotePositions;
   }
 
+  /**
+   * Split the stave lines where the notes intersect
+   * 
+   * @param {*} sortedContours - stave position output from opencv
+   * @param {*} notePositions - note position output from opencv
+   * @param {*} src - the working canvas to draw onto
+   * @returns 
+   */
   function cutoutNotesFromStaves(sortedContours, notePositions, src) {
     const EXTRA_HEIGHT = DEBUG_DISPLAY ? 2 : 0;
     let outputContours = [];
