@@ -440,5 +440,5 @@ function cutoutNotesFromStaves(sortedContours, notePositions, src) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { cutoutNotesFromStaves }
+  module.exports = { findTheVerticalsOnTheContours, cutoutNotesFromStaves }
 }

@@ -66,7 +66,7 @@ function drawStaves(sortedContours, src, maxLength) {
           cv.rectangle(
             src,
             new cv.Point(rect.x, rect.y),
-            new cv.Point(rect.x + rect.width, rect.y + rect.height),
+            new cv.Point(rect.x + rect.width, rect.y /*rect.height*/),
             colour,
             -1
           );
@@ -90,7 +90,7 @@ function drawStaves(sortedContours, src, maxLength) {
           cv.rectangle(
             src,
             new cv.Point(rect.x, rect.y),
-            new cv.Point(rect.x + rect.width, rect.y + rect.height),
+            new cv.Point(rect.x + rect.width, rect.y /*rect.height*/),
             colour,
             1
           );
