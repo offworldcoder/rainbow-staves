@@ -135,10 +135,12 @@
         const { maxLength, sortedContours } = findTheStaves(thresh);
         console.log(`Number of stave lines found ${sortedContours.length}`);
 
+        console.log("findTheVerticalsOnTheContours");
+        const plop = findTheVerticalsOnTheContours(src, sortedContours);
         const notePositions = findTheNotes(gray, src, wholeNotes);
         const newContours = cutoutNotesFromStaves(
           sortedContours,
-          notePositions,
+          plop,
           src
         );
         drawStaves(newContours, src, maxLength);
