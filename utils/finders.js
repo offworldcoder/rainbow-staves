@@ -116,7 +116,7 @@ function likelySomething(color) {
 
 function scanAlongStave(src, rect) {
   const aboveY = rect.y - 1;
-  const belowY = rect.y + rect.height + 1;
+  const belowY = rect.y + rect.height;
   let obstructionPositions = [];
 
   console.log(`rect is x ${rect.x}, y ${rect.y}, w ${rect.width}, h ${rect.height}`);
@@ -161,6 +161,7 @@ function scanAlongStave(src, rect) {
 }
 
 function tidyObstructions(positions) {
+  console.log("LM tidyObsructions")
   if (positions.length === 0) {
     return positions;
   }
@@ -171,13 +172,13 @@ function tidyObstructions(positions) {
     const currentPosition = positions[p];
     const previous = tidiedPositions[tidiedPositions.length - 1];
     console.log(`\nprevious x ${previous.x}, w ${previous.width}`);
-    console.log(`current x ${currentPosition.x}, w ${currentPosition.width} to list`);
+    console.log(`current x ${currentPosition.x}, y ${currentPosition.y}, w ${currentPosition.width} to list`);
 
     if (previous.x + previous.width >= currentPosition.x - 1) {
-      console.log(`COMBINING previous x ${previous.x} next to position x ${currentPosition.x}`);
+      console.log(`COMBINING previous x ${previous.x} y ${previous.y} next to position x ${currentPosition.x}`);
       previous.width += currentPosition.width;
     } else {
-      console.log(`adding current x ${currentPosition.x}, w ${currentPosition.width} to list`);
+      console.log(`adding current x ${currentPosition.x}, y ${previous.y} w ${currentPosition.width} to list`);
       tidiedPositions.push(currentPosition);
     }
   }
@@ -190,7 +191,7 @@ function checkAndHighlight(src, x, y, above) {
 
   const colour = src.data[y * src.cols * src.channels() + x * src.channels()];
   if (likelySomething(colour)) {
-    console.log("*** FOUND SOMETHING ***");
+    console.log(`*** FOUND SOMETHING at x ${x} y ${y} ***`);
     if (false) {
       if (above) {
         cv.rectangle(
@@ -352,6 +353,7 @@ function findTheNotes(gray, src, wholeNotes) {
  * @returns 
  */
 function cutoutNotesFromStaves(sortedContours, notePositions, src) {
+  console.log("LM cutoutNotesFromStaves");
   const EXTRA_HEIGHT = DEBUG_DISPLAY ? 2 : 0;
   let outputContours = [];
   console.log(`sortedContours length ${sortedContours.length}`);
@@ -370,6 +372,7 @@ function cutoutNotesFromStaves(sortedContours, notePositions, src) {
     // }
 
     let staveLeft = staveRect.x;
+    console.log(`staveLeft ${staveLeft}`);
     let wasNoteOverlap = false;
     let verticalShift = 0;
     for (pos in notePositions) {
@@ -407,7 +410,7 @@ function cutoutNotesFromStaves(sortedContours, notePositions, src) {
         const leftStave = {
           x: staveLeft,
           y: staveRect.y + (DEBUG_DISPLAY ? verticalShift : 0),
-          width: noteRect.x - staveLeft,
+          width: noteRect.x - staveLeft - 1,
           height: staveRect.height + EXTRA_HEIGHT,
           real: true,
         };

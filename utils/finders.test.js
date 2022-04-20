@@ -50,7 +50,7 @@ test('find one vertical below one stave', () => {
         }
     }
 
-    src.data[13 * src.cols * src.channels() + 30 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 30 * src.channels()] = 0
 
     expect(findTheVerticalsOnTheContours(src, staves)).toStrictEqual(
         [
@@ -79,8 +79,8 @@ test('find two non-touching verticals below one stave', () => {
         }
     }
 
-    src.data[13 * src.cols * src.channels() + 30 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 40 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 30 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 40 * src.channels()] = 0
 
     expect(findTheVerticalsOnTheContours(src, staves)).toStrictEqual(
         [
@@ -110,8 +110,8 @@ test('find two touching verticals below one stave', () => {
         }
     }
 
-    src.data[13 * src.cols * src.channels() + 30 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 31 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 30 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 31 * src.channels()] = 0
 
     expect(findTheVerticalsOnTheContours(src, staves)).toStrictEqual(
         [
@@ -140,11 +140,11 @@ test('find two pairs of touching verticals below one stave', () => {
         }
     }
 
-    src.data[13 * src.cols * src.channels() + 30 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 31 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 30 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 31 * src.channels()] = 0
 
-    src.data[13 * src.cols * src.channels() + 40 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 41 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 40 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 41 * src.channels()] = 0
 
     expect(findTheVerticalsOnTheContours(src, staves)).toStrictEqual(
         [
@@ -174,18 +174,36 @@ test('find two pairs of several touching verticals below one stave', () => {
         }
     }
 
-    src.data[13 * src.cols * src.channels() + 30 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 31 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 32 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 30 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 31 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 32 * src.channels()] = 0
 
-    src.data[13 * src.cols * src.channels() + 40 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 41 * src.channels()] = 0
-    src.data[13 * src.cols * src.channels() + 42 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 40 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 41 * src.channels()] = 0
+    src.data[12 * src.cols * src.channels() + 42 * src.channels()] = 0
 
     expect(findTheVerticalsOnTheContours(src, staves)).toStrictEqual(
         [
             {"height": 4, "width": 3, "x": 30, "y": 8},
             {"height": 4, "width": 3, "x": 40, "y": 8},
+        ]
+    )
+})
+
+test('LM cut out one vertical on one stave', () => {
+    let notes = [
+        note(100, 200, 1, 20)
+    ]
+
+    let staves = [
+        stave(0, 200, 1000, 2)
+    ]
+    
+    let src = null
+    expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
+        [
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 899, "x": 101, "y": 200}
         ]
     )
 })
@@ -202,7 +220,7 @@ test('cut out one note on one stave', () => {
     let src = null
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
             {"height": 2, "real": true, "width": 880, "x": 120, "y": 200}
         ]
     )
@@ -225,8 +243,8 @@ test('cut out two notes on one stave', () => {
     let src = null
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
-            {"height": 2, "real": true, "width": 180, "x": 120, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 179, "x": 120, "y": 200},
             {"height": 2, "real": true, "width": 680, "x": 320, "y": 200}
         ]
     )
@@ -246,8 +264,8 @@ test('cut out two notes on one stave and second stave with no notes', () => {
     let src = null
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
-            {"height": 2, "real": true, "width": 180, "x": 120, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 179, "x": 120, "y": 200},
             {"height": 2, "real": true, "width": 680, "x": 320, "y": 200},
             {"height": 2, "width": 1000, "x": 0, "y": 220},
         ]
@@ -270,8 +288,8 @@ test('cut out two notes on one stave and second,thirds staves with no notes', ()
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
             {"height": 2, "width": 1000, "x": 0, "y": 180},
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
-            {"height": 2, "real": true, "width": 180, "x": 120, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 179, "x": 120, "y": 200},
             {"height": 2, "real": true, "width": 680, "x": 320, "y": 200},
             {"height": 2, "width": 1000, "x": 0, "y": 220},
         ]
@@ -292,9 +310,9 @@ test('cut out one note on first stave and one note from second stave', () => {
     let src = null
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
             {"height": 2, "real": true, "width": 880, "x": 120, "y": 200},
-            {"height": 2, "real": true, "width": 300, "x": 0, "y": 220},
+            {"height": 2, "real": true, "width": 299, "x": 0, "y": 220},
             {"height": 2, "real": true, "width": 680, "x": 320, "y": 220},
         ]
     )
@@ -314,9 +332,9 @@ test('cut out one note on first stave and one note from second stave from same p
     let src = null
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
             {"height": 2, "real": true, "width": 880, "x": 120, "y": 200},
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 220},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 220},
             {"height": 2, "real": true, "width": 880, "x": 120, "y": 220},
         ]
     )
@@ -334,7 +352,7 @@ test('cut out note straddling note stave', () => {
     let src = null
     expect(cutoutNotesFromStaves(staves, notes, src)).toStrictEqual(
         [
-            {"height": 2, "real": true, "width": 100, "x": 0, "y": 200},
+            {"height": 2, "real": true, "width": 99, "x": 0, "y": 200},
             {"height": 2, "real": true, "width": 880, "x": 120, "y": 200}
         ]
     )

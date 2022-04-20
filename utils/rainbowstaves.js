@@ -8,6 +8,7 @@ const DEBUG_STAVE_DISPLAY = false;
  * @param {*} maxLength - threshold for lines to be considered part of the stave
  */
 function drawStaves(sortedContours, src, maxLength) {
+  console.log("LM drawStaves");
     // draw contours
     const colours = [
       // Treble stave line colours
@@ -30,7 +31,7 @@ function drawStaves(sortedContours, src, maxLength) {
     let previousStaveY = 0;
     for (i in sortedContours) {
       const rect = sortedContours[i];
-      console.log(`=> stave x ${rect.x} y ${rect.y} real ${rect.real}`);
+      console.log(`=> stave x ${rect.x} y ${rect.y} w ${rect.width} h ${rect.height} real ${rect.real}`);
 
       // Only draw real (manually added) horizontal lines or those which are long enough to be considered part of the stave
       // real stave line is one created from cutting up a stave line around notes
