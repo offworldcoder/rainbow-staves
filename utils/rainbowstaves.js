@@ -25,8 +25,8 @@ function drawStaves(sortedContours, src, maxLength) {
       [165, 216, 180, 255],
     ];
 
-    let colour_idx = 0;
-    let colour = colours[colour_idx];
+    let colour_idx = -1;
+    let colour = null;
 
     let previousStaveY = 0;
     for (i in sortedContours) {
@@ -39,10 +39,10 @@ function drawStaves(sortedContours, src, maxLength) {
         if (rect.y != previousStaveY) {
           console.log(
             `changing colour as stave y has changed from ${previousStaveY} to x ${rect.x} y ${rect.y} real ${rect.real}`
-          );
-
-          previousStaveY = rect.y;
-          colour_idx = colour_idx + 1;
+            );
+            
+            previousStaveY = rect.y;
+            colour_idx = colour_idx + 1;
           if (colour_idx == colours.length) {
             colour_idx = 0;
           }
