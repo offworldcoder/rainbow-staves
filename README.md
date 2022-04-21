@@ -12,7 +12,10 @@ Here we show the original sheet music image at the top. Below that is the same i
 
 Example created using googles https://flat.io/
 
-![alt text](sheetmusic/readme%20example.jpg)
+
+Original image:
+(Image)![image](https://user-images.githubusercontent.com/5880747/164500834-9f73c11b-c32b-46b1-8781-90f2e3c2ef2a.png)
+
 
 ### External Resources
 Javascript OpenCV examples: https://docs.opencv.org/3.4/dc/de6/tutorial_js_nodejs.html
